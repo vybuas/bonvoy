@@ -5166,8 +5166,8 @@ const ChatTabWrapper = ({ subTab, go, openTranslator, translatorMode }) => {
 
 // =================== APP SHELL ===================
 export default function App() {
-  const [userMode, setUserModeRaw] = useState("returning"); // "new" | "returning"
-  const [screen, setScreen] = useState("home");
+  const [userMode, setUserModeRaw] = useState("new"); // "new" | "returning" — defaults to "new" so first-time visitors see the onboarding journey
+  const [screen, setScreen] = useState("welcome");
   const [translatorMode, setTranslatorMode] = useState("text");
   const go = (s) => setScreen(s);
   const openTranslator = (mode = "text") => {
