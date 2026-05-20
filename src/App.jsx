@@ -22,6 +22,7 @@ import {
   Compass,
   ArrowRight,
   Wifi,
+  WifiOff,
   Signal,
   Image as ImageIcon,
   ThumbsUp,
@@ -2557,6 +2558,32 @@ const ItineraryScreen = ({ go }) => {
   const [activeTrip, setActiveTrip] = useState(0);
   const [activeDay, setActiveDay] = useState(0);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  // OFFLINE MODE: tracks which trips are downloaded for offline use, and simulates "no internet" state
+  const [offlineTrips, setOfflineTrips] = useState(new Set([0])); // Barcelona pre-downloaded (current trip)
+  const [downloadingTrip, setDownloadingTrip] = useState(null); // trip index currently "downloading"
+  const [previewOffline, setPreviewOffline] = useState(false); // when true, editor shows offline state
+  // File sizes (per trip) — hardcoded realistic values for the mockup
+  const tripSizes = { 0: "3.1 MB", 1: "2.4 MB", 2: "2.8 MB", 3: "2.2 MB" };
+
+  // Simulated download — 1.2s spinner then mark as downloaded
+  const downloadTrip = (idx) => {
+    setDownloadingTrip(idx);
+    setTimeout(() => {
+      setOfflineTrips((prev) => {
+        const next = new Set(prev);
+        next.add(idx);
+        return next;
+      });
+      setDownloadingTrip(null);
+    }, 1200);
+  };
+  const removeOfflineTrip = (idx) => {
+    setOfflineTrips((prev) => {
+      const next = new Set(prev);
+      next.delete(idx);
+      return next;
+    });
+  };
   const [trips, setTrips] = useState([
     {
       name: "Barcelona Trip",
@@ -2876,6 +2903,37 @@ const ItineraryScreen = ({ go }) => {
               </button>
             </div>
 
+            {/* Offline storage summary — shows when at least one trip is downloaded */}
+            {offlineTrips.size > 0 && (
+              <div style={{
+                background: "#fff",
+                border: `1.5px solid ${C.border}`,
+                borderRadius: 14, padding: "10px 12px",
+                marginBottom: 12,
+                display: "flex", alignItems: "center", gap: 10,
+              }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  background: "#E8F5E8",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  <WifiOff size={15} color="#1A7A3E" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 900, color: C.ink }}>
+                    {offlineTrips.size} {offlineTrips.size === 1 ? "trip" : "trips"} available offline
+                  </div>
+                  <div style={{ fontSize: 10, color: C.slate, marginTop: 1 }}>
+                    Viewable without internet · {(() => {
+                      const total = [...offlineTrips].reduce((sum, i) => sum + parseFloat(tripSizes[i] || "0"), 0);
+                      return total.toFixed(1) + " MB stored";
+                    })()}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Filter row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <div style={{ fontSize: 11, color: C.slate }}>
@@ -2937,7 +2995,7 @@ const ItineraryScreen = ({ go }) => {
                         )}
 
                         {/* Status pill (top-left) — "Currently here" gets priority over plain UPCOMING */}
-                        <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6, alignItems: "center" }}>
+                        <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", maxWidth: "70%" }}>
                           {t.current ? (
                             <div style={{
                               background: "#fff",
@@ -2962,6 +3020,21 @@ const ItineraryScreen = ({ go }) => {
                             </div>
                           )}
                           <div style={{ fontSize: 18 }}>{t.flag}</div>
+
+                          {/* Offline badge */}
+                          {offlineTrips.has(originalIdx) && (
+                            <div style={{
+                              background: "rgba(255,255,255,0.95)",
+                              color: "#1A7A3E",
+                              border: "1px solid #1A7A3E",
+                              fontSize: 8.5, fontWeight: 900, letterSpacing: 0.4,
+                              padding: "2px 7px", borderRadius: 10,
+                              display: "flex", alignItems: "center", gap: 3,
+                              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                            }}>
+                              <Check size={9} color="#1A7A3E" strokeWidth={3} /> OFFLINE
+                            </div>
+                          )}
                         </div>
 
                         {/* Text content (bottom-left) */}
@@ -3032,27 +3105,38 @@ const ItineraryScreen = ({ go }) => {
                               padding: 4, overflow: "hidden",
                             }}
                           >
-                            {[
-                              { Icon: Pencil, label: "Edit dates", onClick: () => { switchTrip(originalIdx); } },
-                              { Icon: Calendar, label: "Edit activities", onClick: () => { switchTrip(originalIdx); } },
-                              { Icon: UserPlus, label: "Manage collaborators", onClick: () => { switchTrip(originalIdx); setTimeout(() => setShowInviteModal(true), 100); } },
-                              { Icon: Trash2, label: "Delete trip", danger: true, onClick: () => deleteTrip(originalIdx) },
-                            ].map((it, k) => (
+                            {(() => {
+                              const isOffline = offlineTrips.has(originalIdx);
+                              const isDownloading = downloadingTrip === originalIdx;
+                              return [
+                                isOffline
+                                  ? { Icon: Check, label: `Available offline · ${tripSizes[originalIdx]}`, success: true, onClick: () => removeOfflineTrip(originalIdx) }
+                                  : isDownloading
+                                  ? { Icon: Download, label: "Downloading...", muted: true, onClick: () => {} }
+                                  : { Icon: Download, label: `Download for offline · ${tripSizes[originalIdx]}`, accent: true, onClick: () => downloadTrip(originalIdx) },
+                                { Icon: Pencil, label: "Edit dates", onClick: () => { switchTrip(originalIdx); } },
+                                { Icon: Calendar, label: "Edit activities", onClick: () => { switchTrip(originalIdx); } },
+                                { Icon: UserPlus, label: "Manage collaborators", onClick: () => { switchTrip(originalIdx); setTimeout(() => setShowInviteModal(true), 100); } },
+                                { Icon: Trash2, label: "Delete trip", danger: true, onClick: () => deleteTrip(originalIdx) },
+                              ];
+                            })().map((it, k) => (
                               <button
                                 key={k}
-                                onClick={(e) => { e.stopPropagation(); it.onClick(); }}
+                                onClick={(e) => { e.stopPropagation(); it.onClick(); if (!it.muted) setMenuOpenFor(null); }}
+                                disabled={it.muted}
                                 style={{
-                                  all: "unset", cursor: "pointer",
+                                  all: "unset", cursor: it.muted ? "default" : "pointer",
                                   display: "flex", alignItems: "center", gap: 10,
                                   padding: "10px 12px", borderRadius: 8,
                                   fontSize: 12.5, fontWeight: 700,
-                                  color: it.danger ? "#D43A3A" : C.ink,
+                                  color: it.danger ? "#D43A3A" : it.success ? "#1A7A3E" : it.accent ? C.indigo : it.muted ? C.slate : C.ink,
                                   width: "100%", boxSizing: "border-box",
+                                  opacity: it.muted ? 0.7 : 1,
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = it.danger ? "#FFEEEE" : C.pinkBg}
+                                onMouseEnter={(e) => { if (!it.muted) e.currentTarget.style.background = it.danger ? "#FFEEEE" : it.success ? "#E8F5E8" : C.pinkBg; }}
                                 onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                               >
-                                <it.Icon size={14} color={it.danger ? "#D43A3A" : C.slate} />
+                                <it.Icon size={14} color={it.danger ? "#D43A3A" : it.success ? "#1A7A3E" : it.accent ? C.indigo : C.slate} className={it.muted ? "spin" : ""} />
                                 {it.label}
                               </button>
                             ))}
@@ -3091,6 +3175,124 @@ const ItineraryScreen = ({ go }) => {
             <span>{currentTrip.name}</span>
           </div>
         </div>
+
+        {/* OFFLINE STATUS BAR */}
+        {offlineTrips.has(activeTrip) && (
+          previewOffline ? (
+            // Active offline-preview banner — visible when simulating "no internet"
+            <div style={{
+              background: "linear-gradient(135deg, #FFF3E5, #FFE9A8)",
+              border: "1.5px solid #B89A2F",
+              borderRadius: 12,
+              padding: "10px 12px",
+              marginBottom: 10,
+              display: "flex", alignItems: "center", gap: 10,
+            }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: "50%",
+                background: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <WifiOff size={14} color="#B89A2F" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 900, color: C.ink }}>
+                  Offline preview · viewing saved version
+                </div>
+                <div style={{ fontSize: 10, color: "#8B6F1F", marginTop: 1 }}>
+                  Edits will sync next time you're online
+                </div>
+              </div>
+              <button
+                onClick={() => setPreviewOffline(false)}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  background: "#fff", border: "1px solid #B89A2F",
+                  color: "#8B6F1F", fontSize: 10.5, fontWeight: 800,
+                  padding: "5px 10px", borderRadius: 16,
+                }}
+              >
+                Exit
+              </button>
+            </div>
+          ) : (
+            // Compact "Available offline" indicator + preview button
+            <div style={{
+              background: "#fff",
+              border: `1px solid ${C.border}`,
+              borderRadius: 12,
+              padding: "8px 12px",
+              marginBottom: 10,
+              display: "flex", alignItems: "center", gap: 8,
+            }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: "50%",
+                background: "#E8F5E8",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <Check size={12} color="#1A7A3E" strokeWidth={3} />
+              </div>
+              <div style={{ flex: 1, fontSize: 11, color: C.slate }}>
+                <b style={{ color: C.ink }}>Available offline</b> · {tripSizes[activeTrip]}
+              </div>
+              <button
+                onClick={() => setPreviewOffline(true)}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  background: "#F8F6FD", border: `1px solid ${C.border}`,
+                  color: C.indigo, fontSize: 10.5, fontWeight: 800,
+                  padding: "5px 10px", borderRadius: 16,
+                  display: "flex", alignItems: "center", gap: 4,
+                }}
+              >
+                <WifiOff size={10} /> Preview offline
+              </button>
+            </div>
+          )
+        )}
+
+        {/* If trip is NOT downloaded, show download CTA */}
+        {!offlineTrips.has(activeTrip) && (
+          <div style={{
+            background: `linear-gradient(135deg, ${C.pinkBg}, #fff)`,
+            border: `1.5px dashed ${C.pinkSoft}`,
+            borderRadius: 12,
+            padding: "10px 12px",
+            marginBottom: 10,
+            display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: "50%",
+              background: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <Download size={13} color={C.pink} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 900, color: C.ink }}>
+                Save for offline travel
+              </div>
+              <div style={{ fontSize: 10, color: C.slate, marginTop: 1 }}>
+                {downloadingTrip === activeTrip ? "Downloading..." : `View this plan without internet · ${tripSizes[activeTrip]}`}
+              </div>
+            </div>
+            <button
+              onClick={() => downloadTrip(activeTrip)}
+              disabled={downloadingTrip === activeTrip}
+              style={{
+                all: "unset", cursor: downloadingTrip === activeTrip ? "default" : "pointer",
+                background: downloadingTrip === activeTrip ? "#D8D4E8" : `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+                color: "#fff", fontSize: 10.5, fontWeight: 800,
+                padding: "6px 12px", borderRadius: 16,
+              }}
+            >
+              {downloadingTrip === activeTrip ? "Downloading..." : "Download"}
+            </button>
+          </div>
+        )}
 
         <h2 style={{ fontSize: 22, fontWeight: 800, color: C.ink, margin: "0 0 10px" }}>Plan Your Adventure</h2>
 
@@ -4754,7 +4956,7 @@ const HelpScreen = ({ go }) => {
     },
     {
       q: "Can I use BonVoy offline?",
-      a: "Partially. You can download language packs in the Translator for offline use. Itineraries you've already planned are viewable offline. Live recommendations and the community feed need a connection.",
+      a: "Yes — you can download any trip's full itinerary in advance from the Explore → Itinerary tab. Tap the three-dot menu on a trip and choose \"Download for offline.\" Once saved (typically 2–3 MB per trip), you can view your days, activities, addresses, and notes without internet. Language packs are also downloadable in the Translator. Live recommendations and the community feed still need a connection.",
     },
   ];
 
