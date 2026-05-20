@@ -27,6 +27,18 @@ import {
   ThumbsUp,
   X,
   Check,
+  Download,
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  UserPlus,
+  Bookmark,
+  MoreVertical,
+  Pencil,
+  HelpCircle,
+  Settings,
+  Gift,
 } from "lucide-react";
 
 // BonVoy brand palette (pulled directly from the pitch deck)
@@ -125,7 +137,7 @@ const BottomNav = ({ active, onNavigate }) => {
     { key: "home", label: "Home", Icon: Home },
     { key: "chat", label: "Chat", Icon: MessageCircle },
     { key: "review", label: "Review", Icon: Star },
-    { key: "map", label: "Map", Icon: MapPin },
+    { key: "map", label: "Explore", Icon: MapPin },
     { key: "profile", label: "Profile", Icon: User },
   ];
   return (
@@ -239,75 +251,171 @@ const BackHeader = ({ onBack, right }) => (
 // =================== SCREENS ===================
 
 // ---------- HOME ----------
-const HomeScreen = ({ go }) => (
+const HomeScreen = ({ go, openTranslator, userMode = "returning" }) => {
+  const isNew = userMode === "new";
+  // New users: no credits, no tier yet, location not detected
+  const credits = isNew ? 0 : 1200;
+  const tier = isNew ? "Bronze" : "Silver";
+  const nextTierAt = isNew ? 500 : 1500;
+  // Silver tier spans 500–1499; progress = (current - 500) / (1500 - 500)
+  const progressPct = isNew ? 0 : Math.round(((credits - 500) / 1000) * 100);
+
+  return (
   <Screen bg={C.cream}>
     <StatusBar />
     <div style={{ padding: "10px 20px 0" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, color: C.pink, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, fontFamily: "'JetBrains Mono', monospace" }}>
-        <MapPin size={12} fill={C.pink} /> TRAVELER MODE: BARCELONA
+        <MapPin size={12} fill={C.pink} /> {isNew ? "LOCAL MODE — AMSTERDAM" : "BARCELONA, SPAIN"}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{ fontSize: 26, margin: "0 0 4px", fontWeight: 800, color: C.ink, letterSpacing: -0.5 }}>
-            Good morning, Vy!
+            {isNew ? "Welcome to BonVoy!" : "Good morning, Vy!"}
           </h1>
-          <p style={{ margin: 0, fontSize: 13, color: C.slate }}>Ready for today's adventure?</p>
+          <p style={{ margin: 0, fontSize: 13, color: C.slate }}>
+            {isNew ? "Let's find your first adventure" : "Ready for today's adventure?"}
+          </p>
         </div>
-        <Bonnie size={64} />
+        <Bonnie size={64} mood={isNew ? "excited" : "happy"} />
       </div>
     </div>
 
     {/* Hero credit card */}
-    <div
+    {/* REWARDS ENTRY CARD — persistent access to Rewards page */}
+    <button
+      onClick={() => go("rewards")}
       style={{
+        all: "unset", cursor: "pointer", display: "block",
         margin: "16px 20px",
         borderRadius: 22,
-        padding: 18,
-        background: `linear-gradient(135deg, ${C.pinkSoft} 0%, ${C.pinkBg} 60%, ${C.lavender} 140%)`,
+        padding: 16,
+        background: `linear-gradient(135deg, ${C.pinkSoft} 0%, ${C.pinkBg} 50%, ${C.lavender} 140%)`,
         position: "relative",
         overflow: "hidden",
+        width: "calc(100% - 40px)", boxSizing: "border-box",
       }}
     >
-      <div style={{ fontSize: 11, fontWeight: 700, color: C.indigo, letterSpacing: 0.8, fontFamily: "'JetBrains Mono', monospace" }}>
-        LET'S EXPLORE
+      <div style={{ position: "absolute", top: 14, right: 16, opacity: 0.5 }}>
+        <Spark size={18} color={C.indigo} />
       </div>
-      <div style={{ fontSize: 34, fontWeight: 900, color: C.pink, letterSpacing: -1, lineHeight: 1, margin: "2px 0 10px" }}>
-        SPAIN <Spark size={22} color={C.indigo} />
+      <div style={{ position: "absolute", bottom: 10, right: 70, opacity: 0.3 }}>
+        <Spark size={12} color={C.pink} />
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-        <div style={{ fontSize: 22, fontWeight: 800, color: C.pink }}>850</div>
-        <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.1 }}>credits<br />earned</div>
-        <div style={{ color: C.pink, fontWeight: 900, margin: "0 6px" }}>›››</div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: C.indigo }}>€35</div>
-        <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.1 }}>voucher<br />ready</div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {/* Tier medallion */}
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <div style={{
+            width: 54, height: 54, borderRadius: "50%",
+            background: isNew
+              ? `linear-gradient(135deg, #D9B894, #A87E4F)`
+              : `linear-gradient(135deg, #D9D9E8, #ABABC4)`,
+            border: "3px solid #fff",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#fff", fontSize: 22, fontWeight: 900,
+            boxShadow: "0 4px 10px rgba(15,11,38,0.18)",
+          }}>
+            ◆
+          </div>
+          <div style={{
+            position: "absolute", bottom: -3, left: "50%", transform: "translateX(-50%)",
+            background: "#fff", color: isNew ? "#8B5E3C" : "#7A7A95",
+            fontSize: 8, fontWeight: 900, letterSpacing: 0.4,
+            padding: "1px 6px", borderRadius: 8,
+            boxShadow: "0 1px 3px rgba(15,11,38,0.15)",
+          }}>{tier.toUpperCase()}</div>
+        </div>
+
+        {/* Numbers */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 800, color: C.indigo, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace" }}>
+            YOUR REWARDS
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: C.ink, letterSpacing: -0.4, marginTop: 1 }}>
+            {credits} credits
+          </div>
+          <div style={{ fontSize: 11, color: C.slate, marginTop: 1 }}>
+            {isNew ? `${tier} Local · Write a review to start earning` : `${tier} Local · ${nextTierAt - credits} to Gold`}
+          </div>
+        </div>
+
+        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 6px rgba(15,11,38,0.15)", flexShrink: 0 }}>
+          <ArrowRight size={15} color={C.ink} />
+        </div>
       </div>
+
+      {/* Mini progress bar */}
+      <div style={{ marginTop: 12 }}>
+        <div style={{ height: 5, borderRadius: 5, background: "rgba(255,255,255,0.6)", overflow: "hidden" }}>
+          <div style={{ width: `${progressPct}%`, height: "100%", background: `linear-gradient(90deg, ${C.pink}, ${C.indigo})`, borderRadius: 5 }} />
+        </div>
+      </div>
+    </button>
+
+    {/* TESTER NUDGE — in-app tip card on new-user Home pointing to Returning User mode */}
+    {isNew && (
+      <div style={{ padding: "0 20px 4px" }}>
+        <div style={{
+          background: `linear-gradient(135deg, #FFF9E5, ${C.cream})`,
+          border: `1.5px dashed #B89A2F`,
+          borderRadius: 14, padding: 12,
+          display: "flex", alignItems: "center", gap: 10,
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: "#FFE9A8",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0, fontSize: 16,
+          }}>🎯</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11.5, fontWeight: 900, color: C.ink }}>
+              You're just getting started
+            </div>
+            <div style={{ fontSize: 10.5, color: C.slate, marginTop: 1, lineHeight: 1.4 }}>
+              Switch to <b style={{ color: C.indigo }}>Returning User</b> above to see BonVoy after weeks of trips, reviews & credits
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Translator — dedicated prominent shortcut */}
+    <div style={{ padding: "0 20px 12px" }}>
       <button
-        onClick={() => go("review")}
+        onClick={() => openTranslator && openTranslator("text")}
         style={{
           all: "unset",
           cursor: "pointer",
-          marginTop: 14,
-          background: "#fff",
-          borderRadius: 30,
-          padding: "8px 14px",
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          fontWeight: 700,
-          fontSize: 13,
-          color: C.ink,
-          boxShadow: "0 2px 6px rgba(59,46,229,0.12)",
+          display: "block",
+          width: "100%",
+          boxSizing: "border-box",
+          background: `linear-gradient(135deg, ${C.indigo} 0%, ${C.pink} 130%)`,
+          borderRadius: 16,
+          padding: 12,
+          color: "#fff",
+          position: "relative",
+          overflow: "hidden",
+          boxShadow: "0 8px 24px rgba(59,46,229,0.22)",
         }}
       >
-        <div style={{ width: 22, height: 22, borderRadius: "50%", background: C.pink, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <ArrowRight size={13} />
+        <div style={{ position: "absolute", top: 10, right: 14, opacity: 0.45 }}>
+          <Spark size={16} color={C.yellow} />
         </div>
-        Swipe to switch
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Languages size={18} color="#fff" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 900, letterSpacing: -0.2 }}>Translator</div>
+            <div style={{ fontSize: 11, opacity: 0.9, marginTop: 1 }}>Text · Voice · Live conversation</div>
+          </div>
+          <ArrowRight size={16} color="#fff" />
+        </div>
       </button>
     </div>
 
-    {/* Quick actions */}
-    <div style={{ padding: "0 20px" }}>
+    {/* Quick actions — primary daily-action launchpad, comes first */}
+    <div style={{ padding: "8px 20px 0" }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: C.slate, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace", marginBottom: 10 }}>
         <Spark size={11} color={C.pink} /> QUICK START
       </div>
@@ -319,36 +427,122 @@ const HomeScreen = ({ go }) => (
       </div>
     </div>
 
-    {/* Recommended */}
-    <div style={{ padding: "18px 20px 8px" }}>
-      <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>Recommended by Gold Locals</div>
-      <div style={{ fontSize: 11, color: C.slate, marginTop: 2 }}>Verified by Maria S. & 3 others</div>
+    {/* Recommended by Gold Locals — browse content, less prominent */}
+    <div style={{ padding: "20px 20px 4px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: C.ink, letterSpacing: -0.2, display: "flex", alignItems: "center", gap: 5 }}>
+          <Spark size={12} color={C.pink} /> Gold Locals' picks
+        </div>
+        <div style={{ fontSize: 11, color: C.slate, marginTop: 1 }}>
+          Verified spots loved by Maria, Pedro & 12 others
+        </div>
+      </div>
+      <button
+        onClick={() => go("map")}
+        style={{
+          all: "unset", cursor: "pointer",
+          fontSize: 11.5, fontWeight: 800,
+          color: C.indigo, flexShrink: 0,
+          display: "flex", alignItems: "center", gap: 3,
+        }}
+      >
+        See all <ArrowRight size={11} />
+      </button>
     </div>
-    <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "4px 20px 8px" }}>
+
+    {/* Carousel — smaller cards, lighter visual weight */}
+    <div style={{
+      display: "flex", gap: 10, overflowX: "auto",
+      padding: "8px 20px 10px",
+      scrollSnapType: "x mandatory",
+    }}>
       {[
-        { name: "La Cova Fumada", tag: "Tapas spot", stars: 4.8, grad: `linear-gradient(135deg, ${C.pink}, ${C.lavender})` },
-        { name: "El Paradiso Bar", tag: "Pastrami Bar", stars: 4.9, grad: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})` },
-        { name: "Carrer Blai", tag: "Pintxo street", stars: 4.7, grad: `linear-gradient(135deg, ${C.yellow}, ${C.pink})` },
+        {
+          name: "La Cova Fumada",
+          category: "Tapas spot",
+          stars: 4.8,
+          rec: "Maria S.",
+          recReviews: 142,
+          photo: "https://images.unsplash.com/photo-1775059956734-78ffd2075cec?fm=jpg&q=70&w=600&auto=format&fit=crop",
+          fallback: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`,
+        },
+        {
+          name: "Bunkers del Carmel",
+          category: "Viewpoint",
+          stars: 4.9,
+          rec: "Pedro R.",
+          recReviews: 34,
+          photo: "https://images.unsplash.com/photo-1756072226051-f6835aec4f9a?fm=jpg&q=70&w=600&auto=format&fit=crop",
+          fallback: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})`,
+        },
+        {
+          name: "Mercado de la Boqueria",
+          category: "Food market",
+          stars: 4.7,
+          rec: "Ines G.",
+          recReviews: 89,
+          photo: "https://images.unsplash.com/photo-1750112646313-5fb151a21f13?fm=jpg&q=70&w=600&auto=format&fit=crop",
+          fallback: `linear-gradient(135deg, ${C.yellow}, ${C.pink})`,
+        },
+        {
+          name: "El Xampanyet",
+          category: "Bar",
+          stars: 4.6,
+          rec: "Joan P.",
+          recReviews: 56,
+          photo: null,
+          fallback: `linear-gradient(135deg, ${C.pinkSoft}, ${C.indigo})`,
+        },
       ].map((p, i) => (
-        <div key={i} style={{ minWidth: 160, borderRadius: 16, overflow: "hidden", background: "#fff", border: `1px solid ${C.border}` }}>
-          <div style={{ height: 90, background: p.grad, position: "relative" }}>
-            <div style={{ position: "absolute", top: 8, left: 8, background: "#fff", borderRadius: 30, padding: "3px 8px", fontSize: 10, fontWeight: 700, color: C.lime === C.lime ? "#1A7A3E" : "", display: "flex", alignItems: "center", gap: 3 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.lime, border: "1px solid #1A7A3E" }} />
-              Local Verified
+        <div
+          key={i}
+          style={{
+            minWidth: 158, maxWidth: 158,
+            borderRadius: 14, overflow: "hidden",
+            background: "#fff",
+            border: `1px solid ${C.border}`,
+            scrollSnapAlign: "start",
+          }}
+        >
+          {/* Photo */}
+          <div style={{ height: 95, background: p.fallback, position: "relative", overflow: "hidden" }}>
+            {p.photo && (
+              <img
+                src={p.photo}
+                alt={p.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
+              />
+            )}
+            {/* Gold Pick badge — smaller, lighter */}
+            <div style={{ position: "absolute", top: 7, left: 7, background: C.lime, color: "#1A7A3E", border: "1px solid #1A7A3E", borderRadius: 10, padding: "2px 6px", fontSize: 8.5, fontWeight: 900, letterSpacing: 0.3, display: "flex", alignItems: "center", gap: 3 }}>
+              <Spark size={8} color="#1A7A3E" /> GOLD PICK
             </div>
-            <div style={{ position: "absolute", top: 8, right: 8, background: "#fff", borderRadius: 30, padding: "3px 7px", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", gap: 3 }}>
-              <Star size={10} fill={C.yellow} color={C.yellow} /> {p.stars}
+            {/* Star rating */}
+            <div style={{ position: "absolute", top: 7, right: 7, background: "rgba(255,255,255,0.95)", borderRadius: 10, padding: "2px 6px", fontSize: 9.5, fontWeight: 800, display: "flex", alignItems: "center", gap: 2 }}>
+              <Star size={9} fill={C.yellow} color={C.yellow} /> {p.stars}
             </div>
           </div>
-          <div style={{ padding: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{p.name}</div>
-            <div style={{ fontSize: 11, color: C.pink, fontWeight: 700 }}>{p.tag} ✓</div>
+          {/* Body */}
+          <div style={{ padding: "9px 11px 11px" }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: C.ink, letterSpacing: -0.1, lineHeight: 1.2 }}>{p.name}</div>
+            <div style={{ fontSize: 10, color: C.pink, fontWeight: 700, marginTop: 2 }}>{p.category}</div>
+            <div style={{ fontSize: 9.5, color: C.slate, marginTop: 5, display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 14, height: 14, borderRadius: "50%", background: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`, color: "#fff", fontSize: 7, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {p.rec[0]}
+              </div>
+              <span>{p.rec} · {p.recReviews}</span>
+            </div>
           </div>
         </div>
       ))}
     </div>
+
+    {/* Bottom spacer so the last item doesn't sit flush against the bottom nav */}
+    <div style={{ height: 32 }} />
   </Screen>
-);
+  );
+};
 
 const QuickTile = ({ Icon, label, sub, color, onClick }) => (
   <button
@@ -381,23 +575,49 @@ const ChatScreen = ({ go, openTranslator }) => {
     { from: "bonnie", text: "Hi Vy! I'm Bonnie 🌸 Your friendly travel companion. What can I help with today?" },
   ]);
   const [input, setInput] = useState("");
+  const messagesEndRef = React.useRef(null);
 
-  // Whether the user has sent at least one message — used to hide quick questions
+  // Whether the user has sent at least one message — used to hide intro / quick questions
   const hasConversation = messages.some((m) => m.from === "user");
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTo({ top: messagesEndRef.current.scrollHeight, behavior: "smooth" });
+    }
+  }, [messages]);
 
   const send = (text) => {
     const t = text ?? input;
     if (!t.trim()) return;
     const next = [...messages, { from: "user", text: t }];
-    // canned Bonnie replies
+
+    // Canned Bonnie replies. Order matters — more specific first.
     let reply = "Of course! I'd love to help with that — tell me a bit more about your vibe? 💫";
+
     if (/translat/i.test(t)) { go("translator"); return; }
-    if (/hidden|gem|local/i.test(t)) reply = "Ooh my favorite topic! I know some spots only locals would take you to. Tap Map → Hidden Gems and I'll guide you 🗺️";
-    if (/food|eat|restaurant/i.test(t)) reply = "Gold-local pick: La Cova Fumada for tapas. 4.8★ and verified by 3 locals this month 🍤";
-    if (/near|nearby|current location|recommendations near/i.test(t)) {
-      reply = "You're in El Born right now 📍 Three local picks within 5 min walk: La Cova Fumada (tapas, 4.8★), Bar del Pla (vermouth bar, locals only), and El Xampanyet (cava + anchovies). All verified by Gold Locals this week ✨";
+
+    // Itinerary version variations (cheaper, more local, family-friendly, etc.)
+    if (/cheaper|budget|cheap|affordable|less expensive/i.test(t)) {
+      reply = "On it! Here's a budget version of your plan 💸 Swapped: dinner at the fado restaurant → Time Out Market (€12 vs €38), tram 28 ride → walking tour (free), pastéis at Belém → local bakery in Alfama (€1.50 vs €3.50). Total saving: ~€55 per day. Want me to apply this to the itinerary?";
+    } else if (/more local|authentic|like a local|local version|hidden version/i.test(t)) {
+      reply = "Love this — going full local 🌸 Swapped: Belém Tower → Miradouro da Graça (locals' sunset spot), Time Out Market → Mercado de Campo de Ourique (where Lisboetas actually eat), Tram 28 → Tram 18 (same charm, none of the queue). Verified by 5 Gold Locals this month.";
+    } else if (/family|kids|children/i.test(t)) {
+      reply = "Family-friendly version coming up 👨‍👩‍👧 I'll add Oceanário de Lisboa, the Tram 28 (kids love it!), and skip the late fado dinner for an earlier seafood spot in Cais do Sodré. Want me to update?";
+    } else if (/more options|other version|alternative|different/i.test(t)) {
+      reply = "Got 3 versions for you: 🍃 Budget-friendly (~€45/day), 🌟 Balanced (~€85/day, current), 💎 Local-favourites (~€110/day, hand-picked spots). Which one feels right?";
     }
-    if (/plan|itinerary|trip/i.test(t)) { go("itinerary"); return; }
+    // Price comparison / budget-based food/place queries
+    else if (/price|cost|how much|€|expensive|budget.*food|budget.*restaurant|cheap.*eat/i.test(t)) {
+      reply = "Quick price snapshot for tapas in El Born 🍤 Bar del Pla: ~€18/person · La Cova Fumada: ~€22/person · El Xampanyet: ~€28/person (cava included). All under 5 min walk. Want me to filter by your budget?";
+    } else if (/near|nearby|current location|recommendations near/i.test(t)) {
+      reply = "You're in El Born right now 📍 Three local picks within 5 min walk: La Cova Fumada (tapas, ~€22, 4.8★), Bar del Pla (vermouth bar, ~€15, locals only), and El Xampanyet (cava + anchovies, ~€28). All verified by Gold Locals this week ✨";
+    } else if (/hidden|gem|local/i.test(t)) {
+      reply = "Ooh my favourite topic! I know some spots only locals would take you to. Tap Map → Hidden Gems and I'll guide you 🗺️";
+    } else if (/food|eat|restaurant|tapas|drink/i.test(t)) {
+      reply = "Gold-local pick: La Cova Fumada for tapas (~€22/person) 🍤 4.8★ and verified by 3 locals this month. Want a cheaper or more upscale option?";
+    } else if (/plan|itinerary|trip/i.test(t)) { go("itinerary"); return; }
+
     setMessages([...next, { from: "bonnie", text: reply }]);
     setInput("");
   };
@@ -414,152 +634,162 @@ const ChatScreen = ({ go, openTranslator }) => {
 
   const quickQs = [
     { Icon: MapPin, label: "What's nearby?", action: sendLocationQuery },
-    { Icon: Languages, label: "Help me translate", action: () => go("translator") },
     { Icon: Utensils, label: "Food recommendations" },
+    { Icon: Compass, label: "Cheaper version of my plan", action: () => send("Can you give me a cheaper version of my plan?") },
+    { Icon: Heart, label: "More local version", action: () => send("Can you make my plan more local?") },
     { Icon: Camera, label: "Hidden gems" },
     { Icon: Shirt, label: "Style advice" },
-    { Icon: Compass, label: "Getting around" },
   ];
 
+  // ChatScreen renders inside ChatTabWrapper's flex column
   return (
-    <Screen>
-      <StatusBar />
-      <BackHeader onBack={() => go("home")} />
-
-      {/* Intro card — only when no conversation yet */}
-      {!hasConversation && (
-        <div style={{ textAlign: "center", padding: "6px 24px 16px" }}>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <Bonnie size={86} />
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: C.ink, marginTop: 6 }}>Hi, I'm Bonnie</div>
-          <div style={{ fontSize: 12.5, color: C.slate, marginTop: 4, lineHeight: 1.45 }}>
-            Your friendly travel companion. I'm here to help with translations, local recommendations, style advice, and everything in between.
-          </div>
-          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 10, fontSize: 11, color: C.slate }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 3 }}>🌍 Location-aware</span>
-            <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Heart size={10} fill={C.pink} color={C.pink} /> Local-verified</span>
-          </div>
-        </div>
-      )}
-
-      {/* messages */}
-      {hasConversation && (
-        <div style={{ padding: "10px 16px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-          {messages.map((m, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: m.from === "user" ? "flex-end" : "flex-start", gap: 6 }}>
-              {m.from === "bonnie" && <Bonnie size={28} />}
-              <div
-                style={{
-                  maxWidth: "78%",
-                  background: m.from === "user" ? C.indigo : "#F4F2FB",
-                  color: m.from === "user" ? "#fff" : C.ink,
-                  padding: "10px 12px",
-                  borderRadius: 16,
-                  borderTopLeftRadius: m.from === "user" ? 16 : 4,
-                  borderTopRightRadius: m.from === "user" ? 4 : 16,
-                  fontSize: 13,
-                  lineHeight: 1.4,
-                }}
-              >
-                {m.from === "bonnie" && <div style={{ fontSize: 10.5, fontWeight: 700, color: C.pink, marginBottom: 2 }}>Bonnie</div>}
-                {m.text}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* quick questions — hide once user has sent any message */}
-      {!hasConversation && (
-        <div style={{ padding: "6px 16px 10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: C.slate, fontSize: 11, fontWeight: 700, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
-            <Spark size={10} color={C.pink} /> QUICK QUESTIONS
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {quickQs.map(({ Icon, label, action }, i) => (
-              <button
-                key={i}
-                onClick={() => (action ? action() : send(label))}
-                style={{
-                  all: "unset",
-                  cursor: "pointer",
-                  border: `1px solid ${C.border}`,
-                  background: "#fff",
-                  borderRadius: 12,
-                  padding: "10px 12px",
-                  fontSize: 12,
-                  color: C.ink,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7,
-                }}
-              >
-                <Icon size={14} color={C.slate} /> {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* input — positioned above the bottom nav with breathing room */}
+    <div style={{ flex: 1, minHeight: 0, background: "#fff", display: "flex", flexDirection: "column", paddingBottom: 80 }}>
+      {/* SCROLLABLE messages area — only this scrolls */}
       <div
+        ref={messagesEndRef}
         style={{
-          position: "absolute",
-          left: 12,
-          right: 12,
-          bottom: 96,
-          background: "#fff",
-          borderRadius: 28,
-          border: `1px solid ${C.border}`,
-          padding: "6px 8px",
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          boxShadow: "0 4px 12px rgba(59,46,229,0.08)",
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          overflowX: "hidden",
+          padding: "8px 16px 8px",
         }}
       >
-        <button onClick={() => go("translator")} style={{ all: "unset", cursor: "pointer", padding: 6 }}>
-          <Languages size={16} color={C.slate} />
-        </button>
-        <button onClick={openVoiceTranslator} style={{ all: "unset", cursor: "pointer", padding: 6 }}>
-          <Mic size={16} color={C.pink} />
-        </button>
-        <button onClick={sendLocationQuery} style={{ all: "unset", cursor: "pointer", padding: 6 }}>
-          <MapPin size={16} color={C.slate} />
-        </button>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Ask Bonnie anything..."
+        {/* Intro card — only when no conversation yet */}
+        {!hasConversation && (
+          <div style={{ textAlign: "center", padding: "6px 8px 16px" }}>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <Bonnie size={86} />
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: C.ink, marginTop: 6 }}>Hi, I'm Bonnie</div>
+            <div style={{ fontSize: 12.5, color: C.slate, marginTop: 4, lineHeight: 1.45 }}>
+              Your friendly travel companion. Ask me for budget options, local-only picks, price comparisons, and more.
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 10, fontSize: 11, color: C.slate }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 3 }}>🌍 Location-aware</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Heart size={10} fill={C.pink} color={C.pink} /> Local-verified</span>
+            </div>
+          </div>
+        )}
+
+        {/* Quick questions — only when no conversation yet */}
+        {!hasConversation && (
+          <div style={{ paddingTop: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, color: C.slate, fontSize: 11, fontWeight: 700, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
+              <Spark size={10} color={C.pink} /> QUICK QUESTIONS
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {quickQs.map(({ Icon, label, action }, i) => (
+                <button
+                  key={i}
+                  onClick={() => (action ? action() : send(label))}
+                  style={{
+                    all: "unset",
+                    cursor: "pointer",
+                    border: `1px solid ${C.border}`,
+                    background: "#fff",
+                    borderRadius: 12,
+                    padding: "10px 12px",
+                    fontSize: 12,
+                    color: C.ink,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                  }}
+                >
+                  <Icon size={14} color={C.slate} /> {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Messages */}
+        {hasConversation && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingTop: 4 }}>
+            {messages.map((m, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: m.from === "user" ? "flex-end" : "flex-start", gap: 6 }}>
+                {m.from === "bonnie" && <Bonnie size={28} />}
+                <div
+                  style={{
+                    maxWidth: "78%",
+                    background: m.from === "user" ? C.indigo : "#F4F2FB",
+                    color: m.from === "user" ? "#fff" : C.ink,
+                    padding: "10px 12px",
+                    borderRadius: 16,
+                    borderTopLeftRadius: m.from === "user" ? 16 : 4,
+                    borderTopRightRadius: m.from === "user" ? 4 : 16,
+                    fontSize: 13,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {m.from === "bonnie" && <div style={{ fontSize: 10.5, fontWeight: 700, color: C.pink, marginBottom: 2 }}>Bonnie</div>}
+                  {m.text}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Fixed bottom: input bar — always visible, never scrolls */}
+      <div style={{ flexShrink: 0, padding: "8px 12px 12px", background: "#fff", borderTop: `1px solid ${C.border}` }}>
+        <div
           style={{
-            flex: 1,
-            border: "none",
-            outline: "none",
-            fontSize: 13,
-            background: "transparent",
-            color: C.ink,
-          }}
-        />
-        <button
-          onClick={() => send()}
-          style={{
-            all: "unset",
-            cursor: "pointer",
-            width: 30,
-            height: 30,
-            borderRadius: "50%",
-            background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+            background: "#fff",
+            borderRadius: 28,
+            border: `1px solid ${C.border}`,
+            padding: "6px 8px",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
+            gap: 6,
+            boxShadow: "0 4px 12px rgba(59,46,229,0.08)",
           }}
         >
-          <Send size={14} color="#fff" />
-        </button>
+          <button onClick={() => openTranslator("text")} style={{ all: "unset", cursor: "pointer", padding: 6 }}>
+            <Languages size={16} color={C.slate} />
+          </button>
+          <button onClick={openVoiceTranslator} style={{ all: "unset", cursor: "pointer", padding: 6 }}>
+            <Mic size={16} color={C.slate} />
+          </button>
+          <button onClick={sendLocationQuery} style={{ all: "unset", cursor: "pointer", padding: 6 }}>
+            <MapPin size={16} color={C.slate} />
+          </button>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && send()}
+            placeholder="Ask Bonnie anything..."
+            style={{
+              flex: 1,
+              minWidth: 0,
+              border: "none",
+              outline: "none",
+              fontSize: 13,
+              background: "transparent",
+              color: C.ink,
+            }}
+          />
+          <button
+            onClick={() => send()}
+            style={{
+              all: "unset",
+              cursor: "pointer",
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <Send size={14} color="#fff" />
+          </button>
+        </div>
       </div>
-    </Screen>
+    </div>
   );
 };
 
@@ -567,10 +797,8 @@ const ChatScreen = ({ go, openTranslator }) => {
 const TranslatorScreen = ({ go, initialMode = "text" }) => {
   const [mode, setMode] = useState(initialMode); // text | voice | live
   return (
-    <Screen>
-      <StatusBar />
-      <BackHeader onBack={() => go("chat")} />
-      <div style={{ padding: "4px 20px 0", textAlign: "center" }}>
+    <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingBottom: 90 }}>
+      <div style={{ padding: "8px 20px 0", textAlign: "center" }}>
         <Bonnie size={56} />
         <div style={{ fontSize: 18, fontWeight: 800, color: C.ink, marginTop: 4 }}>Translator</div>
         <div style={{ fontSize: 11, color: C.slate }}>Text, voice & live conversation</div>
@@ -606,10 +834,38 @@ const TranslatorScreen = ({ go, initialMode = "text" }) => {
       </div>
 
       {/* language pair */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px 4px", gap: 8 }}>
         <div style={{ flex: 1, background: "#F4F2FB", padding: "10px 12px", borderRadius: 12, fontSize: 12.5, fontWeight: 700, color: C.ink }}>🇬🇧 English</div>
         <div style={{ width: 28, height: 28, borderRadius: "50%", background: C.indigo, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>⇌</div>
         <div style={{ flex: 1, background: "#F4F2FB", padding: "10px 12px", borderRadius: 12, fontSize: 12.5, fontWeight: 700, color: C.ink, textAlign: "right" }}>🇪🇸 Spanish</div>
+      </div>
+
+      {/* Language pack download — offline support */}
+      <div style={{ padding: "4px 16px 6px" }}>
+        <button
+          style={{
+            all: "unset",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            width: "100%",
+            boxSizing: "border-box",
+            background: "#fff",
+            border: `1px dashed ${C.indigo}`,
+            borderRadius: 12,
+            padding: "10px 12px",
+          }}
+        >
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: C.pinkBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Download size={14} color={C.indigo} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: C.ink }}>Download language pack</div>
+            <div style={{ fontSize: 10.5, color: C.slate, marginTop: 1 }}>Use translator offline · Spanish (24 MB)</div>
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.indigo, fontFamily: "'JetBrains Mono', monospace" }}>GET</div>
+        </button>
       </div>
 
       {mode === "text" && (
@@ -658,103 +914,149 @@ const TranslatorScreen = ({ go, initialMode = "text" }) => {
           </div>
         </div>
       )}
-    </Screen>
+    </div>
   );
 };
 
 // ---------- REVIEW (camera-first review flow + community feed) ----------
-const ReviewScreen = ({ go }) => {
-  // Steps: browse | capture | confirm | write | success
+const ReviewScreen = ({ go, userMode = "returning" }) => {
+  const isNew = userMode === "new";
+  // Steps: browse | capture | confirm | write | success | detail
   const [step, setStep] = useState("browse");
-  const [stars, setStars] = useState(0);
+  const [tab, setTab] = useState("foryou"); // foryou | mine
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [stars, setStars] = useState(0); // supports halves: 0.5, 1.0, 1.5, ... 5.0
   const [reviewText, setReviewText] = useState("");
   const [localTip, setLocalTip] = useState("");
+  const [reviewerRole, setReviewerRole] = useState("traveler"); // traveler | local — how the user identifies for this review
+  // Media captured during the camera step — multiple photos + optional video
+  const [media, setMedia] = useState([]); // array of { type: "photo"|"video", grad }
+  const [cameraMode, setCameraMode] = useState("photo"); // photo | video
+
+  // The user's past reviews — for the "My Reviews" tab. Empty for new users.
+  const myReviews = isNew ? [] : [
+    {
+      id: "mr1",
+      place: "La Cova Fumada",
+      tag: "Tapas spot",
+      stars: 5,
+      text: "Honestly the best bombas of my life. We came back twice in three days. The grandmother behind the bar called me 'querida' by visit two.",
+      tip: "Sit at the bar, not the tables — they save the freshest fish for regulars.",
+      photoGrad: `linear-gradient(135deg, ${C.pinkSoft}, ${C.pink})`,
+      likes: 18,
+      replies: 4,
+      credits: 50,
+      date: "Jun 8 · 2:14 PM",
+      location: "El Born, Barcelona",
+    },
+    {
+      id: "mr2",
+      place: "Bunkers del Carmel",
+      tag: "Viewpoint",
+      stars: 5,
+      text: "Hiked up at sunrise like the local guides said. Empty, gold, perfect. Skip sunset — too packed.",
+      tip: null,
+      photoGrad: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})`,
+      likes: 23,
+      replies: 7,
+      credits: 30,
+      date: "Jun 7 · 7:42 AM",
+      location: "El Carmel, Barcelona",
+    },
+    {
+      id: "mr3",
+      place: "Brunch & Cake",
+      tag: "Brunch spot",
+      stars: 4,
+      text: "Beautiful presentation, slightly overpriced. Get there before 10am or expect to queue.",
+      tip: null,
+      photoGrad: `linear-gradient(135deg, ${C.yellow}, ${C.pink})`,
+      likes: 6,
+      replies: 1,
+      credits: 30,
+      date: "Jun 9 · 10:30 AM",
+      location: "Eixample, Barcelona",
+    },
+  ];
 
   const reset = () => {
     setStep("browse");
     setStars(0);
     setReviewText("");
     setLocalTip("");
+    setSelectedReview(null);
+    setMedia([]);
+    setCameraMode("photo");
+    setReviewerRole("traveler");
   };
 
-  // ============ BROWSE (default landing) ============
+  // ============ BROWSE (default landing — two tabs: Discover & My Reviews) ============
   if (step === "browse") {
     return (
       <Screen bg={C.cream}>
         <StatusBar />
+
+        {/* HEADER — Reviews title, no inline write button (My Reviews tab handles writing) */}
         <div style={{ padding: "10px 20px 0" }}>
           <div style={{ color: C.pink, fontSize: 11, fontWeight: 700, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace" }}>
-            <Spark size={11} color={C.pink} /> EARN CREDITS · BARCELONA
+            <Spark size={11} color={C.pink} /> DISCOVER & SHARE
           </div>
           <h1 style={{ fontSize: 24, margin: "4px 0 2px", fontWeight: 900, color: C.ink, letterSpacing: -0.5 }}>
-            Share what you found
+            Reviews
           </h1>
-          <p style={{ margin: 0, fontSize: 12.5, color: C.slate }}>Real reviews from real travelers. Verified by location.</p>
+          <p style={{ margin: 0, fontSize: 12, color: C.slate, lineHeight: 1.4 }}>
+            Travelers and locals — share what you discovered. GPS-verified.
+          </p>
         </div>
 
-        {/* Big camera CTA */}
-        <div style={{ padding: "16px 20px 0" }}>
-          <button
-            onClick={() => setStep("capture")}
-            style={{
-              all: "unset",
-              cursor: "pointer",
-              display: "block",
-              width: "100%",
-              boxSizing: "border-box",
-              background: `linear-gradient(135deg, ${C.pink} 0%, ${C.indigo} 120%)`,
-              borderRadius: 16,
-              padding: 12,
-              color: "#fff",
-              position: "relative",
-              overflow: "hidden",
-              boxShadow: "0 8px 24px rgba(238,58,138,0.25)",
-            }}
-          >
-            {/* decorative sparks */}
-            <div style={{ position: "absolute", top: 10, right: 14, opacity: 0.5 }}>
-              <Spark size={16} color={C.yellow} />
-            </div>
-            <div style={{ position: "absolute", bottom: 12, right: 50, opacity: 0.4 }}>
-              <Spark size={12} color={C.lime} />
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Camera size={18} color="#fff" />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 900, letterSpacing: -0.2 }}>Review a place</div>
-                <div style={{ fontSize: 11, opacity: 0.9, marginTop: 1 }}>Snap a photo · earn up to <b>+70 credits</b></div>
-              </div>
-              <ArrowRight size={16} color="#fff" />
-            </div>
-          </button>
+        {/* TAB SWITCHER — Discover / My Reviews */}
+        <div style={{ padding: "14px 20px 0" }}>
+          <div style={{ display: "flex", gap: 6, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 22, padding: 4 }}>
+            {[
+              { k: "foryou", label: "Discover" },
+              { k: "mine", label: "My Reviews" },
+            ].map((t) => (
+              <button
+                key={t.k}
+                onClick={() => setTab(t.k)}
+                style={{
+                  all: "unset", cursor: "pointer", flex: 1, textAlign: "center",
+                  padding: "8px 0", borderRadius: 18,
+                  fontSize: 12.5, fontWeight: 800,
+                  background: tab === t.k ? `linear-gradient(135deg, ${C.pink}, ${C.indigo})` : "transparent",
+                  color: tab === t.k ? "#fff" : C.slate,
+                  boxShadow: tab === t.k ? "0 3px 8px rgba(238,58,138,0.22)" : "none",
+                  transition: "all 0.15s",
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Smart suggestion based on GPS */}
-        <div style={{ padding: "10px 20px 4px" }}>
-          <div style={{ background: "#fff", border: `2px dashed ${C.indigo}`, borderRadius: 16, padding: 12, display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: C.lime, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
-              <MapPin size={16} color="#1A7A3E" fill="#1A7A3E" />
+        {/* ───────── DISCOVER TAB ───────── */}
+        {tab === "foryou" && (
+          <>
+        {/* Smart suggestion based on GPS — kept, slightly more compact */}
+        <div style={{ padding: "12px 20px 0" }}>
+          <div style={{ background: "#fff", border: `2px dashed ${C.indigo}`, borderRadius: 14, padding: 10, display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.lime, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
+              <MapPin size={14} color="#1A7A3E" fill="#1A7A3E" />
               <div style={{ position: "absolute", inset: -3, borderRadius: "50%", border: `2px solid ${C.lime}`, opacity: 0.6, animation: "pulse 1.6s infinite" }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.indigo, letterSpacing: 0.5 }}>YOU'RE HERE NOW</div>
-              <div style={{ fontSize: 13.5, fontWeight: 800, color: C.ink, marginTop: 1 }}>Café Martinho da Arcada</div>
-              <div style={{ fontSize: 11, color: C.slate, marginTop: 1 }}>Visited 12 min ago · perfect for a fresh review</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: C.indigo, letterSpacing: 0.5 }}>YOU'RE HERE NOW</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: C.ink, marginTop: 1 }}>La Cova Fumada</div>
+              <div style={{ fontSize: 10.5, color: C.slate, marginTop: 1 }}>Visited 12 min ago · earn up to +70 credits</div>
             </div>
             <button
               onClick={() => setStep("capture")}
               style={{
-                all: "unset",
-                cursor: "pointer",
-                background: C.indigo,
-                color: "#fff",
-                fontSize: 11,
-                fontWeight: 800,
-                padding: "8px 12px",
-                borderRadius: 20,
+                all: "unset", cursor: "pointer",
+                background: C.indigo, color: "#fff",
+                fontSize: 11, fontWeight: 800,
+                padding: "7px 11px", borderRadius: 20,
               }}
             >
               Review
@@ -762,211 +1064,617 @@ const ReviewScreen = ({ go }) => {
           </div>
         </div>
 
-        {/* Your reviews this week */}
+        {/* RECENT REVIEWS feed — section header matches Hidden Gem style */}
         <div style={{ padding: "16px 20px 4px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.slate, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace" }}>
-              YOUR REVIEWS THIS WEEK
-            </div>
-            <div style={{ fontSize: 11, color: C.pink, fontWeight: 800 }}>+135 earned</div>
-          </div>
-
-          {/* mini stats row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 10 }}>
-            {[
-              { v: "3", l: "POSTED" },
-              { v: "47", l: "HELPFUL" },
-              { v: "1", l: "GOLD TIP" },
-            ].map((s, i) => (
-              <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "8px 6px", textAlign: "center" }}>
-                <div style={{ fontSize: 18, fontWeight: 900, color: C.pink, lineHeight: 1 }}>{s.v}</div>
-                <div style={{ fontSize: 9, color: C.slate, fontWeight: 700, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>{s.l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent local reviews feed */}
-        <div style={{ padding: "4px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-            <Spark size={11} color={C.indigo} />
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.slate, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace" }}>
-              RECENT LOCAL REVIEWS
-            </div>
-          </div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 2 }}>Recent reviews near you</div>
+          <div style={{ fontSize: 11, color: C.slate, marginBottom: 12 }}>From travelers and locals — keep exploring</div>
 
           {[
             {
               name: "Maria S.",
-              gold: true,
+              role: "gold",      // gold | local | traveler
+              verifiedReviews: 142,
               place: "La Cova Fumada",
               tag: "Tapas spot",
               stars: 5,
               text: "Bomba is everything. Skip the tourist places on the corner — this is the original.",
               tip: true,
               likes: 24,
+              replies: 6,
               time: "2h",
               grad: `linear-gradient(135deg, ${C.pinkSoft}, ${C.pink})`,
             },
             {
-              name: "Pedro R.",
-              gold: false,
+              name: "Jonas K.",
+              role: "traveler",
+              verifiedReviews: 8,
               place: "Bunkers del Carmel",
               tag: "Viewpoint",
+              stars: 5,
+              text: "First time in Barcelona and Bonnie suggested this over the tourist viewpoint. Genuinely the best hour of my trip.",
+              tip: false,
+              likes: 42,
+              replies: 11,
+              time: "4h",
+              grad: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})`,
+            },
+            {
+              name: "Pedro R.",
+              role: "local",
+              verifiedReviews: 34,
+              place: "Mercado de la Boqueria",
+              tag: "Food market",
               stars: 4,
               text: "Sunset is overcrowded now. Go at sunrise instead — same view, no people.",
               tip: false,
               likes: 18,
+              replies: 3,
               time: "5h",
-              grad: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})`,
+              grad: `linear-gradient(135deg, ${C.yellow}, ${C.pink})`,
             },
             {
               name: "Ines G.",
-              gold: true,
+              role: "gold",
+              verifiedReviews: 89,
               place: "Mercado de la Boqueria",
               tag: "Food market",
               stars: 4,
               text: "Go to the back stalls. The front is a tourist trap — locals buy at El Quim.",
               tip: true,
               likes: 31,
+              replies: 8,
               time: "1d",
               grad: `linear-gradient(135deg, ${C.yellow}, ${C.pink})`,
             },
-          ].map((r, i) => (
-            <div
-              key={i}
-              style={{
-                background: "#fff",
-                border: `1px solid ${C.border}`,
-                borderRadius: 16,
-                padding: 12,
-                marginBottom: 10,
-              }}
-            >
-              {/* header */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 30, height: 30, borderRadius: "50%", background: r.grad, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 900 }}>
-                  {r.name[0]}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 800, color: C.ink }}>{r.name}</span>
-                    {r.gold && (
-                      <span style={{ background: C.lime, color: "#1A7A3E", border: "1px solid #1A7A3E", fontSize: 8.5, fontWeight: 800, padding: "1px 5px", borderRadius: 10, letterSpacing: 0.3 }}>
-                        ◆ GOLD LOCAL
-                      </span>
+          ].map((r, i) => {
+            // Role badge styling
+            const roleStyle = {
+              gold: { label: "◆ GOLD LOCAL", bg: C.lime, color: "#1A7A3E", border: "#1A7A3E" },
+              local: { label: "LOCAL", bg: "#E5F5E5", color: "#1A7A3E", border: "#1A7A3E" },
+              traveler: { label: "TRAVELER", bg: C.pinkBg, color: C.pink, border: C.pink },
+            }[r.role];
+            return (
+              <div
+                key={i}
+                style={{
+                  background: "#fff",
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 18,
+                  marginBottom: 14,
+                  overflow: "hidden",
+                  boxShadow: "0 4px 12px rgba(15,11,38,0.06)",
+                }}
+              >
+                {/* Larger immersive photo — feed-style */}
+                <div style={{ height: 180, background: r.grad, position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", inset: 0, opacity: 0.25, background: "radial-gradient(circle at 30% 25%, #fff, transparent 60%)" }} />
+                  {/* Top-left badges */}
+                  <div style={{ position: "absolute", top: 10, left: 10, display: "flex", gap: 6 }}>
+                    {r.tip && (
+                      <div style={{ background: "#fff", borderRadius: 14, padding: "4px 9px", fontSize: 10, fontWeight: 800, color: C.pink, display: "flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(15,11,38,0.12)" }}>
+                        <Sparkles size={10} color={C.pink} fill={C.pink} /> LOCAL TIP
+                      </div>
                     )}
                   </div>
-                  <div style={{ fontSize: 10.5, color: C.slate }}>
-                    {r.place} · <span style={{ color: C.pink, fontWeight: 700 }}>{r.tag}</span> · {r.time}
+                  {/* Top-right GPS pill */}
+                  <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(255,255,255,0.92)", borderRadius: 14, padding: "4px 8px", fontSize: 9.5, fontWeight: 800, color: "#1A7A3E", display: "flex", alignItems: "center", gap: 3, boxShadow: "0 2px 6px rgba(15,11,38,0.12)" }}>
+                    <CheckCircle2 size={10} color="#1A7A3E" /> GPS VERIFIED
+                  </div>
+                  {/* Bottom overlay: place + tag */}
+                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "30px 14px 12px", background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.55))" }}>
+                    <div style={{ color: "#fff", fontSize: 15, fontWeight: 900, letterSpacing: -0.2, textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{r.place}</div>
+                    <div style={{ color: "#fff", fontSize: 11, opacity: 0.95, fontWeight: 600 }}>{r.tag}</div>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 1 }}>
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <Star key={n} size={11} fill={n <= r.stars ? C.yellow : "#EAE6F5"} color={n <= r.stars ? C.yellow : "#EAE6F5"} />
-                  ))}
-                </div>
-              </div>
 
-              {/* photo placeholder */}
-              <div style={{ height: 120, borderRadius: 12, background: r.grad, marginBottom: 8, position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", inset: 0, opacity: 0.2, background: "radial-gradient(circle at 30% 30%, #fff, transparent 50%)" }} />
-                {r.tip && (
-                  <div style={{ position: "absolute", top: 8, left: 8, background: "#fff", borderRadius: 20, padding: "3px 8px", fontSize: 10, fontWeight: 800, color: C.pink, display: "flex", alignItems: "center", gap: 3 }}>
-                    <Sparkles size={10} color={C.pink} fill={C.pink} /> LOCAL TIP
+                {/* Reviewer stamp + content */}
+                <div style={{ padding: "12px 14px 14px" }}>
+                  {/* Reviewer row */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: "50%", background: r.grad, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 900, border: "2px solid #fff", boxShadow: "0 2px 6px rgba(15,11,38,0.12)", flexShrink: 0 }}>
+                      {r.name[0]}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{r.name}</span>
+                        <span style={{
+                          background: roleStyle.bg, color: roleStyle.color,
+                          border: `1px solid ${roleStyle.border}`,
+                          fontSize: 8.5, fontWeight: 800, padding: "1px 6px",
+                          borderRadius: 10, letterSpacing: 0.3,
+                        }}>
+                          {roleStyle.label}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 10.5, color: C.slate, marginTop: 1 }}>
+                        {(r.role === "gold" || r.role === "local") ? `${r.verifiedReviews} verified reviews · ${r.time} ago` : `${r.time} ago`}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 1, flexShrink: 0 }}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Star key={n} size={12} fill={n <= r.stars ? C.yellow : "#EAE6F5"} color={n <= r.stars ? C.yellow : "#EAE6F5"} />
+                      ))}
+                    </div>
                   </div>
-                )}
-                <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.9)", borderRadius: 20, padding: "3px 7px", fontSize: 9.5, fontWeight: 800, color: "#1A7A3E", display: "flex", alignItems: "center", gap: 3 }}>
-                  <CheckCircle2 size={10} color="#1A7A3E" /> GPS verified
+
+                  {/* Review text */}
+                  <div style={{ fontSize: 13, color: C.ink, lineHeight: 1.5 }}>{r.text}</div>
+
+                  {/* Engagement footer */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
+                    <button style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.slate, fontWeight: 700 }}>
+                      <Heart size={13} /> {r.likes}
+                    </button>
+                    <button style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: C.slate, fontWeight: 700 }}>
+                      <MessageCircle size={13} /> {r.replies}
+                    </button>
+                    <button style={{ all: "unset", cursor: "pointer", marginLeft: "auto", display: "flex", alignItems: "center", gap: 3, fontSize: 11.5, color: C.indigo, fontWeight: 800 }}>
+                      View on map <ArrowRight size={11} />
+                    </button>
+                  </div>
                 </div>
               </div>
+            );
+          })}
+        </div>
+        </>
+        )}
 
-              {/* text */}
-              <div style={{ fontSize: 12.5, color: C.ink, lineHeight: 1.45 }}>{r.text}</div>
+        {/* ───────── MY REVIEWS TAB ───────── */}
+        {tab === "mine" && (
+          <>
+            {/* Write a new review CTA */}
+            <div style={{ padding: "14px 20px 0" }}>
+              <button
+                onClick={() => setStep("capture")}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  display: "block", width: "100%", boxSizing: "border-box",
+                  background: `linear-gradient(135deg, ${C.pink} 0%, ${C.indigo} 120%)`,
+                  borderRadius: 16, padding: 12, color: "#fff",
+                  position: "relative", overflow: "hidden",
+                  boxShadow: "0 8px 24px rgba(238,58,138,0.25)",
+                }}
+              >
+                <div style={{ position: "absolute", top: 10, right: 14, opacity: 0.5 }}>
+                  <Spark size={16} color={C.yellow} />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Camera size={18} color="#fff" />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 900, letterSpacing: -0.2 }}>Write a new review</div>
+                    <div style={{ fontSize: 11, opacity: 0.9, marginTop: 1 }}>Snap a photo · earn up to <b>+70 credits</b></div>
+                  </div>
+                  <ArrowRight size={16} color="#fff" />
+                </div>
+              </button>
+            </div>
 
-              {/* footer */}
-              <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
-                <button style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.slate, fontWeight: 600 }}>
-                  <ThumbsUp size={13} /> Helpful · {r.likes}
+            {/* Stats this week — cleaner labels */}
+            <div style={{ padding: "16px 20px 0" }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 2 }}>Your reviews this week</div>
+              <div style={{ fontSize: 11, color: C.slate, marginBottom: 10 }}>Activity from the last 7 days</div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                {(isNew ? [
+                  { v: "0", l: "REVIEWS", color: C.slate },
+                  { v: "0", l: "LIKES", color: C.slate },
+                  { v: "+0", l: "CREDITS", color: C.slate },
+                ] : [
+                  { v: "3", l: "REVIEWS", color: C.pink },
+                  { v: "47", l: "LIKES", color: C.pink },
+                  { v: "+110", l: "CREDITS", color: C.indigo },
+                ]).map((s, i) => (
+                  <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "10px 6px", textAlign: "center" }}>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.v}</div>
+                    <div style={{ fontSize: 9, color: C.slate, fontWeight: 700, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginTop: 3 }}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* All my past reviews */}
+            <div style={{ padding: "18px 20px 4px" }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 2 }}>All your reviews</div>
+              <div style={{ fontSize: 11, color: C.slate, marginBottom: 12 }}>
+                {myReviews.length > 0 ? `Tap any review to see details · ${myReviews.length} posted` : "Your reviews will show up here"}
+              </div>
+
+              {myReviews.length === 0 && (
+                <div style={{
+                  background: `linear-gradient(135deg, ${C.pinkBg}, #fff)`,
+                  border: `1.5px dashed ${C.pinkSoft}`,
+                  borderRadius: 16, padding: 18, textAlign: "center",
+                }}>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                    <Bonnie size={56} />
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: C.ink, marginBottom: 4 }}>No reviews yet</div>
+                  <div style={{ fontSize: 11.5, color: C.slate, lineHeight: 1.5, maxWidth: 240, margin: "0 auto 12px" }}>
+                    Snap a photo at a place you visit and tell others what you thought — earn +30 credits per review
+                  </div>
+                  <button
+                    onClick={() => setStep("capture")}
+                    style={{
+                      all: "unset", cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+                      color: "#fff", fontSize: 12, fontWeight: 800,
+                      padding: "9px 16px", borderRadius: 20,
+                    }}
+                  >
+                    Write your first review <ArrowRight size={12} color="#fff" />
+                  </button>
+                </div>
+              )}
+
+              {myReviews.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => { setSelectedReview(r); setStep("detail"); }}
+                  style={{
+                    all: "unset", cursor: "pointer",
+                    display: "flex", gap: 10,
+                    background: "#fff", border: `1px solid ${C.border}`,
+                    borderRadius: 14, padding: 10,
+                    marginBottom: 10, width: "100%", boxSizing: "border-box",
+                  }}
+                >
+                  {/* Thumb */}
+                  <div style={{ width: 60, height: 60, borderRadius: 12, background: r.photoGrad, flexShrink: 0, position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", inset: 0, opacity: 0.2, background: "radial-gradient(circle at 30% 30%, #fff, transparent 60%)" }} />
+                  </div>
+                  {/* Body */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 6 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: C.ink, lineHeight: 1.2 }}>{r.place}</div>
+                      <div style={{ display: "flex", gap: 1, flexShrink: 0 }}>
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <Star key={n} size={10} fill={n <= r.stars ? C.yellow : "#EAE6F5"} color={n <= r.stars ? C.yellow : "#EAE6F5"} />
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 10.5, color: C.slate, marginTop: 1 }}>{r.tag} · {r.date}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 5, fontSize: 10.5, color: C.slate, fontWeight: 600 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                        <Heart size={10} /> {r.likes}
+                      </span>
+                      <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                        <MessageCircle size={10} /> {r.replies}
+                      </span>
+                      <span style={{ color: C.pink, fontWeight: 800 }}>+{r.credits} credits</span>
+                    </div>
+                  </div>
+                  <ArrowRight size={14} color={C.slate} style={{ alignSelf: "center", flexShrink: 0 }} />
                 </button>
-                <button style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.slate, fontWeight: 600 }}>
-                  <Heart size={13} /> Save
-                </button>
-                <button style={{ all: "unset", cursor: "pointer", marginLeft: "auto", display: "flex", alignItems: "center", gap: 3, fontSize: 11.5, color: C.indigo, fontWeight: 700 }}>
-                  View on map <ArrowRight size={11} />
-                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </Screen>
+    );
+  }
+
+  // ============ DETAIL VIEW — open a single past review ============
+  if (step === "detail" && selectedReview) {
+    const r = selectedReview;
+    return (
+      <Screen bg={C.cream}>
+        <StatusBar />
+        {/* Back to My Reviews */}
+        <div style={{ padding: "10px 20px 4px" }}>
+          <button
+            onClick={() => { setStep("browse"); setTab("mine"); setSelectedReview(null); }}
+            style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: C.indigo, fontWeight: 800, fontSize: 13 }}
+          >
+            <ChevronLeft size={16} /> Back to My Reviews
+          </button>
+        </div>
+
+        {/* Hero photo */}
+        <div style={{ padding: "8px 20px 0" }}>
+          <div style={{ height: 200, borderRadius: 18, background: r.photoGrad, position: "relative", overflow: "hidden", boxShadow: "0 8px 24px rgba(15,11,38,0.12)" }}>
+            <div style={{ position: "absolute", inset: 0, opacity: 0.25, background: "radial-gradient(circle at 30% 25%, #fff, transparent 60%)" }} />
+            {/* GPS pill */}
+            <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(255,255,255,0.92)", borderRadius: 14, padding: "4px 9px", fontSize: 9.5, fontWeight: 800, color: "#1A7A3E", display: "flex", alignItems: "center", gap: 3 }}>
+              <CheckCircle2 size={11} color="#1A7A3E" /> GPS VERIFIED
+            </div>
+            {r.tip && (
+              <div style={{ position: "absolute", top: 12, left: 12, background: "#fff", borderRadius: 14, padding: "4px 9px", fontSize: 10, fontWeight: 800, color: C.pink, display: "flex", alignItems: "center", gap: 3 }}>
+                <Sparkles size={10} color={C.pink} fill={C.pink} /> LOCAL TIP
+              </div>
+            )}
+            {/* Place name overlay */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "30px 16px 14px", background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.6))" }}>
+              <div style={{ color: "#fff", fontSize: 19, fontWeight: 900, letterSpacing: -0.3, textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{r.place}</div>
+              <div style={{ color: "#fff", fontSize: 11.5, opacity: 0.95, fontWeight: 600, display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                <MapPin size={11} color="#fff" /> {r.location}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Meta row: stars + date */}
+        <div style={{ padding: "12px 20px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: 2 }}>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Star key={n} size={16} fill={n <= r.stars ? C.yellow : "#EAE6F5"} color={n <= r.stars ? C.yellow : "#EAE6F5"} />
+            ))}
+            <span style={{ fontSize: 12, color: C.slate, marginLeft: 6, alignSelf: "center" }}>{r.tag}</span>
+          </div>
+          <div style={{ fontSize: 11, color: C.slate }}>{r.date}</div>
+        </div>
+
+        {/* Full review text */}
+        <div style={{ padding: "12px 20px 0" }}>
+          <div style={{ fontSize: 14, color: C.ink, lineHeight: 1.55 }}>{r.text}</div>
+        </div>
+
+        {/* Local tip block if present */}
+        {r.tip && (
+          <div style={{ padding: "14px 20px 0" }}>
+            <div style={{ background: C.pinkBg, border: `1px solid ${C.pinkSoft}`, borderRadius: 14, padding: 12 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, color: C.pink, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", display: "flex", alignItems: "center", gap: 4 }}>
+                <Sparkles size={11} color={C.pink} fill={C.pink} /> YOUR LOCAL TIP
+              </div>
+              <div style={{ fontSize: 13, color: C.ink, marginTop: 5, lineHeight: 1.5, fontStyle: "italic" }}>
+                "{r.tip}"
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Engagement stats — three big cards */}
+        <div style={{ padding: "18px 20px 0" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 2 }}>How this review is doing</div>
+          <div style={{ fontSize: 11, color: C.slate, marginBottom: 10 }}>Engagement & rewards from this post</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+            <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: "12px 8px", textAlign: "center" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
+                <Heart size={18} color={C.pink} fill={C.pink} />
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: C.ink, lineHeight: 1 }}>{r.likes}</div>
+              <div style={{ fontSize: 9.5, color: C.slate, fontWeight: 700, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginTop: 4 }}>LIKES</div>
+            </div>
+            <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: "12px 8px", textAlign: "center" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
+                <MessageCircle size={18} color={C.indigo} />
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: C.ink, lineHeight: 1 }}>{r.replies}</div>
+              <div style={{ fontSize: 9.5, color: C.slate, fontWeight: 700, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginTop: 4 }}>COMMENTS</div>
+            </div>
+            <div style={{ background: `linear-gradient(135deg, ${C.pinkBg}, #fff)`, border: `1px solid ${C.pinkSoft}`, borderRadius: 14, padding: "12px 8px", textAlign: "center" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
+                <Sparkles size={18} color={C.pink} fill={C.pink} />
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: C.pink, lineHeight: 1 }}>+{r.credits}</div>
+              <div style={{ fontSize: 9.5, color: C.slate, fontWeight: 700, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginTop: 4 }}>CREDITS</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Comments preview */}
+        <div style={{ padding: "20px 20px 4px" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 8 }}>Recent comments</div>
+          {[
+            { name: "Dani", initial: "D", color: `linear-gradient(135deg, ${C.indigo}, ${C.pinkSoft})`, text: "Going there tomorrow — thanks for the tip!", time: "1h" },
+            { name: "Marie", initial: "M", color: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`, text: "Was the bomba spicy? I'm sensitive haha", time: "3h" },
+          ].slice(0, Math.min(2, r.replies)).map((c, i) => (
+            <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 10, marginBottom: 8, display: "flex", gap: 8 }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: c.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 900, flexShrink: 0 }}>
+                {c.initial}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 800, color: C.ink }}>{c.name}</span>
+                  <span style={{ fontSize: 10, color: C.slate }}>· {c.time} ago</span>
+                </div>
+                <div style={{ fontSize: 12, color: C.ink, marginTop: 2, lineHeight: 1.4 }}>{c.text}</div>
               </div>
             </div>
           ))}
+          {r.replies > 2 && (
+            <button style={{ all: "unset", cursor: "pointer", color: C.indigo, fontWeight: 800, fontSize: 12, padding: "8px 0" }}>
+              View all {r.replies} comments →
+            </button>
+          )}
         </div>
       </Screen>
     );
   }
 
-  // ============ STEP 1: CAPTURE photo ============
+  // ============ STEP 1: CAPTURE photos + video ============
   if (step === "capture") {
+    // Each captured item gets a unique gradient so the strip looks varied
+    const photoGrads = [
+      `linear-gradient(135deg, ${C.lavender}, ${C.pink}, ${C.yellow})`,
+      `linear-gradient(135deg, ${C.pinkSoft}, ${C.pink}, ${C.lavender})`,
+      `linear-gradient(135deg, ${C.yellow}, ${C.pink}, ${C.indigo})`,
+      `linear-gradient(135deg, ${C.lime}, ${C.lavender}, ${C.pink})`,
+    ];
+    const videoGrads = [
+      `linear-gradient(135deg, ${C.indigo}, ${C.pink}, ${C.lavender})`,
+      `linear-gradient(135deg, ${C.ink}, ${C.indigo}, ${C.pink})`,
+    ];
+    const captureMedia = () => {
+      const grads = cameraMode === "photo" ? photoGrads : videoGrads;
+      const grad = grads[media.length % grads.length];
+      setMedia([...media, { type: cameraMode, grad }]);
+    };
+    const removeMedia = (idx) => setMedia(media.filter((_, i) => i !== idx));
+    const photoCount = media.filter((m) => m.type === "photo").length;
+    const videoCount = media.filter((m) => m.type === "video").length;
+
     return (
       <Screen bg="#0F0B26">
         <StatusBar />
-        {/* "Camera viewfinder" */}
         <div style={{ position: "absolute", inset: 0, padding: "44px 0 90px", display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "0 20px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <button onClick={() => setStep("browse")} style={{ all: "unset", cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", gap: 4, fontWeight: 700, fontSize: 14 }}>
+          {/* Top bar */}
+          <div style={{ padding: "0 20px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button onClick={() => { reset(); }} style={{ all: "unset", cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", gap: 4, fontWeight: 700, fontSize: 14 }}>
               <X size={18} /> Cancel
             </button>
             <div style={{ color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace" }}>STEP 1 / 3</div>
           </div>
 
-          <div style={{ flex: 1, margin: "0 20px", borderRadius: 22, background: `linear-gradient(160deg, ${C.lavender} 0%, ${C.pink} 50%, ${C.yellow} 100%)`, position: "relative", overflow: "hidden", border: "3px solid rgba(255,255,255,0.2)" }}>
-            {/* fake viewfinder corners */}
-            {[
-              { top: 14, left: 14, br: "0", bl: "0", tr: "0" },
-              { top: 14, right: 14, bl: "0", tl: "0", br: "0" },
-              { bottom: 14, left: 14, br: "0", tl: "0", tr: "0" },
-              { bottom: 14, right: 14, bl: "0", tl: "0", tr: "0" },
-            ].map((p, i) => (
-              <div key={i} style={{ position: "absolute", width: 24, height: 24, border: "3px solid #fff", ...p }} />
-            ))}
-            {/* GPS confirmation pill */}
-            <div style={{ position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,0.5)", color: "#fff", borderRadius: 30, padding: "6px 12px", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 5, backdropFilter: "blur(10px)" }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.lime, boxShadow: `0 0 6px ${C.lime}` }} />
-              GPS locked · Café Martinho
-            </div>
-            {/* center mascot */}
-            <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center" }}>
-              <Bonnie size={70} mood="excited" />
-              <div style={{ color: "#fff", fontSize: 13, fontWeight: 800, marginTop: 8, textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>
-                Snap a real photo!
-              </div>
-              <div style={{ color: "#fff", fontSize: 11, opacity: 0.9, marginTop: 2, textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>
-                We'll verify the location for you
-              </div>
+          {/* Photo / Video mode toggle */}
+          <div style={{ padding: "0 20px 8px", display: "flex", justifyContent: "center" }}>
+            <div style={{ display: "inline-flex", gap: 4, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 22, padding: 3, backdropFilter: "blur(8px)" }}>
+              {[
+                { k: "photo", label: "Photo", Icon: Camera },
+                { k: "video", label: "Video", Icon: Mic },
+              ].map((m) => (
+                <button
+                  key={m.k}
+                  onClick={() => setCameraMode(m.k)}
+                  style={{
+                    all: "unset", cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: 5,
+                    padding: "6px 14px", borderRadius: 18,
+                    fontSize: 12, fontWeight: 800,
+                    background: cameraMode === m.k ? "#fff" : "transparent",
+                    color: cameraMode === m.k ? C.ink : "#fff",
+                  }}
+                >
+                  <m.Icon size={12} /> {m.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* camera controls */}
-          <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "16px 30px 0" }}>
-            <button style={{ all: "unset", cursor: "pointer", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-              <ImageIcon size={22} />
-              <span style={{ fontSize: 10, opacity: 0.8 }}>Gallery</span>
-            </button>
+          {/* Viewfinder */}
+          <div style={{ flex: 1, margin: "0 20px", borderRadius: 22, background: `linear-gradient(160deg, #2A2552 0%, #3D2F66 35%, #1F1A40 75%, #0F0B26 100%)`, position: "relative", overflow: "hidden", border: "3px solid rgba(255,255,255,0.2)" }}>
+            {/* fake viewfinder corners */}
+            {[
+              { top: 14, left: 14 },
+              { top: 14, right: 14 },
+              { bottom: 14, left: 14 },
+              { bottom: 14, right: 14 },
+            ].map((p, i) => (
+              <div key={i} style={{ position: "absolute", width: 24, height: 24, border: "3px solid #fff", ...p }} />
+            ))}
+
+            {/* GPS confirmation pill — more prominent for visibility */}
+            <div style={{ position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,0.62)", color: "#fff", borderRadius: 30, padding: "7px 14px", fontSize: 11.5, fontWeight: 800, display: "flex", alignItems: "center", gap: 6, backdropFilter: "blur(10px)", border: `1.5px solid ${C.lime}` }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.lime, boxShadow: `0 0 8px ${C.lime}`, animation: "breathGlow 2.4s ease-in-out infinite" }} />
+              GPS LOCKED · La Cova Fumada
+            </div>
+
+            {/* recording indicator if video mode */}
+            {cameraMode === "video" && (
+              <div style={{ position: "absolute", top: 50, left: "50%", transform: "translateX(-50%)", background: "rgba(220,30,30,0.85)", color: "#fff", borderRadius: 12, padding: "3px 8px", fontSize: 9.5, fontWeight: 800, display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", animation: "pulse 1.2s infinite" }} />
+                READY TO RECORD · 15s MAX
+              </div>
+            )}
+
+            {/* center mascot */}
+            <div style={{ position: "absolute", top: "48%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center" }}>
+              <Bonnie size={62} mood="excited" />
+              <div style={{ color: "#fff", fontSize: 13, fontWeight: 800, marginTop: 8, textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>
+                {cameraMode === "photo" ? "Snap as many as you want!" : "Tap to start recording"}
+              </div>
+              <div style={{ color: "#fff", fontSize: 11, opacity: 0.9, marginTop: 2, textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>
+                {cameraMode === "photo"
+                  ? "Food, interior, exterior — show it all"
+                  : "Quick video tour, max 15 seconds"}
+              </div>
+            </div>
+
+            {/* Media strip at bottom of viewfinder */}
+            {media.length > 0 && (
+              <div style={{ position: "absolute", bottom: 14, left: 14, right: 14 }}>
+                <div style={{ color: "#fff", fontSize: 10, fontWeight: 700, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 6, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                  CAPTURED · {photoCount} {photoCount === 1 ? "PHOTO" : "PHOTOS"}{videoCount > 0 ? ` · ${videoCount} ${videoCount === 1 ? "VIDEO" : "VIDEOS"}` : ""}
+                </div>
+                <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
+                  {media.map((m, i) => (
+                    <div key={i} style={{ position: "relative", flexShrink: 0 }}>
+                      <div style={{
+                        width: 50, height: 50, borderRadius: 10,
+                        background: m.grad,
+                        border: "2px solid #fff",
+                        position: "relative", overflow: "hidden",
+                      }}>
+                        {m.type === "video" && (
+                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.18)" }}>
+                            <div style={{ width: 0, height: 0, borderLeft: "10px solid #fff", borderTop: "6px solid transparent", borderBottom: "6px solid transparent", marginLeft: 3 }} />
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => removeMedia(i)}
+                        style={{
+                          all: "unset", cursor: "pointer",
+                          position: "absolute", top: -4, right: -4,
+                          width: 18, height: 18, borderRadius: "50%",
+                          background: "rgba(0,0,0,0.7)", color: "#fff",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}
+                        aria-label="Remove"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Camera controls — fixed 3-col layout so shutter stays dead center */}
+          <div style={{ display: "flex", alignItems: "center", padding: "16px 30px 20px" }}>
+            {/* Left: Camera-only indicator (no gallery uploads per credit spec) */}
+            <div style={{ flex: 1, display: "flex", justifyContent: "flex-start" }}>
+              <div style={{ color: "rgba(255,255,255,0.7)", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, width: 60 }}>
+                <Camera size={20} />
+                <span style={{ fontSize: 9, opacity: 0.85, textAlign: "center", lineHeight: 1.2 }}>Camera only</span>
+              </div>
+            </div>
+
+            {/* Center: shutter */}
             <button
-              onClick={() => setStep("confirm")}
+              onClick={captureMedia}
               style={{
                 all: "unset",
                 cursor: "pointer",
                 width: 70,
                 height: 70,
                 borderRadius: "50%",
-                background: "#fff",
+                background: cameraMode === "video" ? "#DC1E1E" : "#fff",
                 border: "4px solid rgba(255,255,255,0.3)",
                 boxShadow: "0 0 0 3px #fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
               }}
-            />
-            <button style={{ all: "unset", cursor: "pointer", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-              <Camera size={22} />
-              <span style={{ fontSize: 10, opacity: 0.8 }}>Flip</span>
+            >
+              {cameraMode === "video" && (
+                <div style={{ width: 18, height: 18, borderRadius: 4, background: "#fff" }} />
+              )}
             </button>
+
+            {/* Right: Done */}
+            <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => media.length > 0 && setStep("confirm")}
+                disabled={media.length === 0}
+                style={{
+                  all: "unset",
+                  cursor: media.length > 0 ? "pointer" : "not-allowed",
+                  color: media.length > 0 ? C.lime : "rgba(255,255,255,0.4)",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                  fontWeight: 800,
+                  width: 60,
+                }}
+              >
+                <CheckCircle2 size={22} fill={media.length > 0 ? C.lime : "transparent"} />
+                <span style={{ fontSize: 10, opacity: 0.95 }}>
+                  {media.length > 0 ? "Done" : "Capture first"}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </Screen>
@@ -1046,7 +1754,49 @@ const ReviewScreen = ({ go }) => {
 
   // ============ STEP 3: WRITE review ============
   if (step === "write") {
-    const canSubmit = stars > 0 && reviewText.trim().length > 5;
+    const MIN_WORDS = 50;
+    const wordCount = reviewText.trim() === "" ? 0 : reviewText.trim().split(/\s+/).length;
+    const meetsWordCount = wordCount >= MIN_WORDS;
+    const canSubmit = stars > 0 && meetsWordCount;
+    // Helper component: a tappable half-star renderer for rating
+    const RatingStars = () => (
+      <div style={{ display: "flex", gap: 6, justifyContent: "center", padding: "8px 0" }}>
+        {[1, 2, 3, 4, 5].map((n) => {
+          // Each star has two click zones: left half (n - 0.5) and right half (n)
+          // Visually: an empty star underneath, and a yellow star on top clipped to the fill width
+          const fillPct = stars >= n ? 100 : stars >= n - 0.5 ? 50 : 0;
+          return (
+            <div key={n} style={{ position: "relative", width: 40, height: 40 }}>
+              {/* Empty grey star underneath */}
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Star size={36} fill="#fff" color={C.border} strokeWidth={2} />
+              </div>
+              {/* Yellow filled star on top, clipped */}
+              {fillPct > 0 && (
+                <div style={{ position: "absolute", inset: 0, overflow: "hidden", width: `${fillPct}%` }}>
+                  <div style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Star size={36} fill={C.yellow} color={C.yellow} strokeWidth={2} />
+                  </div>
+                </div>
+              )}
+              {/* Left-half tap zone */}
+              <button
+                onClick={() => setStars(n - 0.5)}
+                style={{ all: "unset", cursor: "pointer", position: "absolute", left: 0, top: 0, width: "50%", height: "100%" }}
+                aria-label={`${n - 0.5} stars`}
+              />
+              {/* Right-half tap zone */}
+              <button
+                onClick={() => setStars(n)}
+                style={{ all: "unset", cursor: "pointer", position: "absolute", left: "50%", top: 0, width: "50%", height: "100%" }}
+                aria-label={`${n} stars`}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+
     return (
       <Screen bg={C.cream}>
         <StatusBar />
@@ -1059,40 +1809,152 @@ const ReviewScreen = ({ go }) => {
 
         <div style={{ padding: "10px 20px 0" }}>
           <h2 style={{ fontSize: 22, fontWeight: 900, color: C.ink, margin: "0 0 4px", letterSpacing: -0.5 }}>Tell us about it</h2>
-          <p style={{ margin: 0, fontSize: 12.5, color: C.slate }}>Café Martinho da Arcada · Traditional Café</p>
+          <p style={{ margin: 0, fontSize: 12.5, color: C.slate }}>La Cova Fumada · Tapas spot</p>
         </div>
 
-        {/* photo thumb */}
-        <div style={{ margin: "12px 20px", display: "flex", gap: 10, alignItems: "center", background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 8 }}>
-          <div style={{ width: 50, height: 50, borderRadius: 10, background: `linear-gradient(135deg, ${C.lavender}, ${C.pink}, ${C.yellow})` }} />
-          <div style={{ flex: 1, fontSize: 11.5, color: C.slate }}>
-            Your photo · <span style={{ color: "#1A7A3E", fontWeight: 700 }}>GPS verified ✓</span>
+        {/* PROMINENT GPS VERIFIED BANNER — green, hard to miss */}
+        <div style={{ padding: "12px 20px 0" }}>
+          <div style={{
+            background: `linear-gradient(135deg, #E5F5E5 0%, ${C.lime}88 100%)`,
+            border: `2px solid #1A7A3E`,
+            borderRadius: 14, padding: "10px 12px",
+            display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: "50%",
+                background: "#1A7A3E",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <CheckCircle2 size={18} color="#fff" fill="#1A7A3E" strokeWidth={2.5} />
+              </div>
+              <div style={{
+                position: "absolute", inset: -3, borderRadius: "50%",
+                border: `2px solid #1A7A3E`, opacity: 0.5,
+                animation: "pulse 1.8s infinite",
+              }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 900, color: "#0F4A1F" }}>
+                GPS VERIFIED · Your review is location-authentic
+              </div>
+              <div style={{ fontSize: 10.5, color: "#1A7A3E", marginTop: 1 }}>
+                Confirmed at La Cova Fumada · {media.length} {media.length === 1 ? "item" : "items"} timestamped
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* stars */}
-        <div style={{ padding: "4px 20px" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
-            YOUR RATING
+        {/* MEDIA STRIP — show all captured photos/video */}
+        <div style={{ padding: "10px 20px 0" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 2 }}>Your media</div>
+          <div style={{ fontSize: 11, color: C.slate, marginBottom: 8 }}>
+            {media.length} {media.length === 1 ? "item" : "items"} · tap + to add more
           </div>
-          <div style={{ display: "flex", gap: 6, justifyContent: "center", padding: "8px 0" }}>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button key={n} onClick={() => setStars(n)} style={{ all: "unset", cursor: "pointer", padding: 4 }}>
-                <Star
-                  size={36}
-                  fill={n <= stars ? C.yellow : "#fff"}
-                  color={n <= stars ? C.yellow : C.border}
-                  strokeWidth={2}
-                />
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+            {media.length === 0 && (
+              <div style={{ fontSize: 12, color: C.slate, fontStyle: "italic", padding: "8px 0" }}>
+                No media yet — go back to capture some.
+              </div>
+            )}
+            {media.map((m, i) => (
+              <div key={i} style={{
+                position: "relative", flexShrink: 0,
+                width: 64, height: 64, borderRadius: 12,
+                background: m.grad, overflow: "hidden",
+                border: `1px solid ${C.border}`,
+              }}>
+                {m.type === "video" && (
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.18)" }}>
+                    <div style={{ width: 0, height: 0, borderLeft: "12px solid #fff", borderTop: "7px solid transparent", borderBottom: "7px solid transparent", marginLeft: 3 }} />
+                  </div>
+                )}
+                {/* tiny type badge */}
+                <div style={{
+                  position: "absolute", bottom: 3, right: 3,
+                  background: "rgba(0,0,0,0.6)", color: "#fff",
+                  fontSize: 8, fontWeight: 800, letterSpacing: 0.3,
+                  padding: "1px 4px", borderRadius: 6,
+                }}>
+                  {m.type === "video" ? "VID" : "IMG"}
+                </div>
+              </div>
+            ))}
+            {/* Add more thumbnail */}
+            <button
+              onClick={() => setStep("capture")}
+              style={{
+                all: "unset", cursor: "pointer", flexShrink: 0,
+                width: 64, height: 64, borderRadius: 12,
+                border: `2px dashed ${C.indigo}`, background: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: C.indigo,
+              }}
+              aria-label="Add more media"
+            >
+              <Plus size={20} strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+
+        {/* REVIEWER ROLE TOGGLE — Local or Traveler */}
+        <div style={{ padding: "14px 20px 0" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 2 }}>You're reviewing as</div>
+          <div style={{ fontSize: 11, color: C.slate, marginBottom: 8 }}>This helps others gauge your perspective</div>
+          <div style={{ display: "flex", gap: 6, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 22, padding: 4 }}>
+            {[
+              { k: "traveler", label: "Traveler", emoji: "✈️", desc: "Just visiting" },
+              { k: "local", label: "Local", emoji: "📍", desc: "I live here" },
+            ].map((r) => (
+              <button
+                key={r.k}
+                onClick={() => setReviewerRole(r.k)}
+                style={{
+                  all: "unset", cursor: "pointer", flex: 1,
+                  padding: "8px 6px", borderRadius: 18,
+                  background: reviewerRole === r.k
+                    ? (r.k === "traveler"
+                        ? `linear-gradient(135deg, ${C.pink}, ${C.lavender})`
+                        : `linear-gradient(135deg, ${C.indigo}, ${C.lavender})`)
+                    : "transparent",
+                  color: reviewerRole === r.k ? "#fff" : C.slate,
+                  transition: "all 0.15s",
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                }}
+              >
+                <div style={{ fontSize: 12.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                  <span style={{ fontSize: 13 }}>{r.emoji}</span> {r.label}
+                </div>
+                <div style={{ fontSize: 10, opacity: reviewerRole === r.k ? 0.92 : 0.7, marginTop: 1, textAlign: "center" }}>{r.desc}</div>
               </button>
             ))}
           </div>
         </div>
 
+        {/* stars — now with half-star support */}
+        <div style={{ padding: "14px 20px 0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: C.ink }}>Your rating</div>
+            {stars > 0 && (
+              <div style={{ fontSize: 13, fontWeight: 900, color: C.pink }}>
+                {stars % 1 === 0 ? `${stars}.0` : stars.toFixed(1)} / 5
+              </div>
+            )}
+          </div>
+          <div style={{ fontSize: 11, color: C.slate, marginBottom: 4 }}>Tap a half-star for finer ratings</div>
+          <RatingStars />
+        </div>
+
         {/* review text */}
-        <div style={{ padding: "8px 20px" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 6 }}>
-            YOUR REVIEW
+        <div style={{ padding: "10px 20px 0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: C.ink }}>Your review</div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: meetsWordCount ? "#1A7A3E" : C.slate }}>
+              {wordCount} / {MIN_WORDS} words {meetsWordCount && "✓"}
+            </div>
+          </div>
+          <div style={{ fontSize: 11, color: C.slate, marginBottom: 6 }}>
+            {meetsWordCount ? "Looks good — share away" : `${MIN_WORDS - wordCount} more ${MIN_WORDS - wordCount === 1 ? "word" : "words"} to submit`}
           </div>
           <textarea
             value={reviewText}
@@ -1115,18 +1977,19 @@ const ReviewScreen = ({ go }) => {
           />
         </div>
 
-        {/* local tip (bonus) */}
-        <div style={{ padding: "4px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-            <Sparkles size={12} color={C.pink} fill={C.pink} />
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.pink, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace" }}>
-              LOCAL TIP · BONUS +20 CREDITS
+        {/* INSIDER TIP (bonus) — works for both travelers and locals */}
+        <div style={{ padding: "12px 20px 0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, display: "flex", alignItems: "center", gap: 5 }}>
+              <Sparkles size={13} color={C.pink} fill={C.pink} /> Insider tip
             </div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: C.pink }}>+20 credits bonus</div>
           </div>
+          <div style={{ fontSize: 11, color: C.slate, marginBottom: 6 }}>Something only someone who's been there would know — optional</div>
           <input
             value={localTip}
             onChange={(e) => setLocalTip(e.target.value)}
-            placeholder="What should locals know? (e.g. 'Sit upstairs')"
+            placeholder="e.g. Sit at the bar, not the tables"
             style={{
               width: "100%",
               border: `1px dashed ${C.pink}`,
@@ -1142,20 +2005,76 @@ const ReviewScreen = ({ go }) => {
           />
         </div>
 
+        {/* TRUST SIGNAL — addresses the "fake review" concern */}
+        <div style={{ padding: "14px 20px 0" }}>
+          <div style={{
+            background: "#fff",
+            border: `1px solid ${C.border}`,
+            borderRadius: 14, padding: 12,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", background: C.indigo, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <CheckCircle2 size={12} color="#fff" fill={C.indigo} strokeWidth={2.5} />
+              </div>
+              <div style={{ fontSize: 12.5, fontWeight: 900, color: C.ink }}>
+                How BonVoy fights fake reviews
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.6 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 3 }}>
+                <span style={{ color: "#1A7A3E", fontWeight: 900 }}>✓</span>
+                <span><b style={{ color: C.ink }}>GPS-verified</b> — you can only review where you actually go</span>
+              </div>
+              <div style={{ display: "flex", gap: 6, marginBottom: 3 }}>
+                <span style={{ color: "#1A7A3E", fontWeight: 900 }}>✓</span>
+                <span><b style={{ color: C.ink }}>Photo or video required</b> — timestamped and reviewed</span>
+              </div>
+              <div style={{ display: "flex", gap: 6, marginBottom: 3 }}>
+                <span style={{ color: "#1A7A3E", fontWeight: 900 }}>✓</span>
+                <span><b style={{ color: C.ink }}>Hidden Gems</b> only count after 3 other GPS-verified users confirm</span>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <span style={{ color: "#1A7A3E", fontWeight: 900 }}>✓</span>
+                <span>Top reviewers earn <b style={{ color: C.ink }}>Gold Local</b> status over time</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* credit preview */}
         <div style={{ padding: "10px 20px" }}>
           <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 10, fontSize: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", color: C.slate }}>
-              <span>Photo + review</span><span style={{ fontWeight: 700, color: C.ink }}>+50 credits</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", color: C.slate, marginTop: 3 }}>
-              <span>Local tip bonus {localTip.trim() ? "✓" : ""}</span>
-              <span style={{ fontWeight: 700, color: localTip.trim() ? C.pink : C.slate }}>{localTip.trim() ? "+20" : "+0"} credits</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border}`, fontWeight: 800 }}>
-              <span style={{ color: C.ink }}>You'll earn</span>
-              <span style={{ color: C.pink }}>+{50 + (localTip.trim() ? 20 : 0)} credits</span>
-            </div>
+            {(() => {
+              const photoCount = media.filter((m) => m.type === "photo").length;
+              const hasVideo = media.filter((m) => m.type === "video").length > 0;
+              const isFullGuide = photoCount >= 5;
+              const baseLabel = isFullGuide ? "Full guide post (5+ photos)" : "Photo review";
+              const baseCredits = isFullGuide ? 80 : 30;
+              const tipBonus = localTip.trim() ? 20 : 0;
+              const videoBonus = hasVideo ? 15 : 0;
+              const total = baseCredits + tipBonus + videoBonus;
+              return (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: C.slate }}>
+                    <span>{baseLabel}</span><span style={{ fontWeight: 700, color: C.ink }}>+{baseCredits} credits</span>
+                  </div>
+                  {hasVideo && (
+                    <div style={{ display: "flex", justifyContent: "space-between", color: C.slate, marginTop: 3 }}>
+                      <span>Video bonus ✓</span>
+                      <span style={{ fontWeight: 700, color: C.pink }}>+15 credits</span>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", justifyContent: "space-between", color: C.slate, marginTop: 3 }}>
+                    <span>Insider tip bonus {localTip.trim() ? "✓" : ""}</span>
+                    <span style={{ fontWeight: 700, color: localTip.trim() ? C.pink : C.slate }}>{localTip.trim() ? "+20" : "+0"} credits</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border}`, fontWeight: 800 }}>
+                    <span style={{ color: C.ink }}>You'll earn</span>
+                    <span style={{ color: C.pink }}>+{total} credits</span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
 
@@ -1183,7 +2102,9 @@ const ReviewScreen = ({ go }) => {
           </button>
           {!canSubmit && (
             <div style={{ textAlign: "center", fontSize: 11, color: C.slate, marginTop: 6 }}>
-              Add a rating and a few words to continue
+              {stars === 0 && !meetsWordCount && `Add a rating and at least ${MIN_WORDS} words to continue`}
+              {stars === 0 && meetsWordCount && "Add a rating to continue"}
+              {stars > 0 && !meetsWordCount && `${MIN_WORDS - wordCount} more ${MIN_WORDS - wordCount === 1 ? "word" : "words"} to continue`}
             </div>
           )}
         </div>
@@ -1193,18 +2114,21 @@ const ReviewScreen = ({ go }) => {
 
   // ============ SUCCESS confirmation ============
   if (step === "success") {
-    const earned = 50 + (localTip.trim() ? 20 : 0);
+    const photoCount = media.filter((m) => m.type === "photo").length;
+    const hasVideo = media.filter((m) => m.type === "video").length > 0;
+    const baseCredits = photoCount >= 5 ? 80 : 30;
+    const earned = baseCredits + (localTip.trim() ? 20 : 0) + (hasVideo ? 15 : 0);
     return (
       <Screen bg={C.cream}>
         <StatusBar />
-        <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px", textAlign: "center", paddingBottom: 100 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 24px 32px", textAlign: "center" }}>
           {/* burst */}
           <div style={{ position: "relative", marginBottom: 14 }}>
-            <Bonnie size={120} mood="excited" />
-            <div style={{ position: "absolute", top: -10, right: -16 }}><Spark size={28} color={C.yellow} /></div>
-            <div style={{ position: "absolute", bottom: -4, left: -20 }}><Spark size={22} color={C.lavender} /></div>
-            <div style={{ position: "absolute", top: 20, left: -28 }}><Spark size={16} color={C.pink} /></div>
-            <div style={{ position: "absolute", bottom: 30, right: -28 }}><Spark size={18} color={C.indigo} /></div>
+            <Bonnie size={96} mood="excited" />
+            <div style={{ position: "absolute", top: -10, right: -16 }}><Spark size={24} color={C.yellow} /></div>
+            <div style={{ position: "absolute", bottom: -4, left: -20 }}><Spark size={18} color={C.lavender} /></div>
+            <div style={{ position: "absolute", top: 20, left: -28 }}><Spark size={14} color={C.pink} /></div>
+            <div style={{ position: "absolute", bottom: 30, right: -28 }}><Spark size={16} color={C.indigo} /></div>
           </div>
 
           <div style={{ fontSize: 13, fontWeight: 700, color: C.indigo, letterSpacing: 1.2, fontFamily: "'JetBrains Mono', monospace" }}>
@@ -1213,19 +2137,68 @@ const ReviewScreen = ({ go }) => {
           <div style={{ fontSize: 36, fontWeight: 900, color: C.pink, margin: "6px 0", letterSpacing: -1, lineHeight: 1 }}>
             +{earned}
           </div>
-          <div style={{ fontSize: 16, fontWeight: 800, color: C.ink, marginBottom: 4 }}>credits earned!</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: C.ink, marginBottom: 6 }}>credits earned!</div>
+
+          {/* Reviewer role badge */}
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 5,
+            background: reviewerRole === "traveler" ? C.pinkBg : "#EBE7FB",
+            color: reviewerRole === "traveler" ? C.pink : C.indigo,
+            border: `1px solid ${reviewerRole === "traveler" ? C.pink : C.indigo}`,
+            fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4,
+            padding: "3px 9px", borderRadius: 12,
+            marginBottom: 8,
+          }}>
+            {reviewerRole === "traveler" ? "✈️ POSTED AS TRAVELER" : "📍 POSTED AS LOCAL"}
+          </div>
+
           <div style={{ fontSize: 12.5, color: C.slate, lineHeight: 1.5, maxWidth: 260 }}>
-            {localTip.trim() ? "Your local tip helps other travelers find the real Lisbon. " : ""}
+            {localTip.trim() ? "Your insider tip helps others find the real Barcelona. " : ""}
             Keep it up to reach <b style={{ color: C.indigo }}>Gold Local</b> status.
           </div>
 
           {/* mini progress bar */}
           <div style={{ width: "100%", maxWidth: 260, marginTop: 18 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: C.slate, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
-              <span>SILVER · 920</span><span>GOLD · 1500</span>
+              <span>SILVER · 1200</span><span>GOLD · 1500</span>
             </div>
             <div style={{ height: 8, borderRadius: 8, background: C.pinkBg, overflow: "hidden" }}>
-              <div style={{ width: "61%", height: "100%", background: `linear-gradient(90deg, ${C.pink}, ${C.indigo})` }} />
+              <div style={{ width: "80%", height: "100%", background: `linear-gradient(90deg, ${C.pink}, ${C.indigo})` }} />
+            </div>
+          </div>
+
+          {/* "You're now Silver Local — earned, not bought" callout */}
+          <div style={{ width: "100%", maxWidth: 320, marginTop: 14, display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "#fff", border: `1.5px solid ${C.lime}`, borderRadius: 14 }}>
+            <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, #D9D9E8, #ABABC4)`, border: "1.5px solid #fff", boxShadow: "0 0 0 1.5px #ABABC4", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 900, flexShrink: 0 }}>◆</div>
+            <div style={{ flex: 1, textAlign: "left" }}>
+              <div style={{ fontSize: 12.5, fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>You're Silver Local</div>
+              <div style={{ fontSize: 10.5, color: "#1A7A3E", marginTop: 1, fontWeight: 700 }}>Earned through verified reviews, not bought</div>
+            </div>
+          </div>
+
+          {/* GOLD LOCAL UNLOCKS — what reaching Gold gets you */}
+          <div style={{ width: "100%", maxWidth: 320, marginTop: 18, background: `linear-gradient(135deg, ${C.cream} 0%, ${C.pinkBg} 100%)`, border: `1.5px solid ${C.pinkSoft}`, borderRadius: 16, padding: 14, textAlign: "left" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", background: C.lime, border: "1.5px solid #1A7A3E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: "#1A7A3E", flexShrink: 0 }}>◆</div>
+              <div style={{ fontSize: 13, fontWeight: 900, color: C.ink }}>What Gold Local unlocks</div>
+            </div>
+            <div style={{ fontSize: 11.5, color: C.slate, lineHeight: 1.6 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 3 }}>
+                <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+                <span><b style={{ color: C.ink }}>Better voucher rates</b> — €1 per 20 credits (vs. €1 per 25)</span>
+              </div>
+              <div style={{ display: "flex", gap: 6, marginBottom: 3 }}>
+                <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+                <span><b style={{ color: C.ink }}>Early access</b> to hidden gem drops in your city</span>
+              </div>
+              <div style={{ display: "flex", gap: 6, marginBottom: 3 }}>
+                <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+                <span>A <b style={{ color: C.ink }}>◆ Gold Local badge</b> on your profile and reviews</span>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+                <span><b style={{ color: C.ink }}>Featured tips</b> shown first in feed search</span>
+              </div>
             </div>
           </div>
 
@@ -1278,11 +2251,36 @@ const ReviewScreen = ({ go }) => {
 // ---------- MAP (hidden gems + anti-overtourism) ----------
 const MapScreen = ({ go }) => {
   const [tab, setTab] = useState("hidden"); // hidden | crowd
+  const [saved, setSaved] = useState({});
+  const toggleSave = (key) => setSaved((s) => ({ ...s, [key]: !s[key] }));
   return (
     <Screen>
       <StatusBar />
-      <div style={{ padding: "8px 20px 0" }}>
+      <div style={{ padding: "10px 20px 0" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.pink, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace" }}>
+              <Spark size={11} color={C.pink} /> EXPLORE & PLAN
+            </div>
+            <h1 style={{ fontSize: 22, margin: "2px 0 0", fontWeight: 900, color: C.ink, letterSpacing: -0.5 }}>Currently in Barcelona</h1>
+          </div>
+        </div>
         <div style={{ display: "flex", gap: 8 }}>
+          {/* Hidden Gem Map — LEFT, active by default */}
+          <button
+            style={{
+              all: "unset",
+              padding: "8px 14px",
+              borderRadius: 22,
+              background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+              color: "#fff",
+              fontSize: 12.5,
+              fontWeight: 700,
+            }}
+          >
+            Hidden Gem Map
+          </button>
+          {/* Itinerary Planner — RIGHT */}
           <button
             onClick={() => go("itinerary")}
             style={{
@@ -1297,19 +2295,6 @@ const MapScreen = ({ go }) => {
             }}
           >
             Itinerary Planner
-          </button>
-          <button
-            style={{
-              all: "unset",
-              padding: "8px 14px",
-              borderRadius: 22,
-              background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
-              color: "#fff",
-              fontSize: 12.5,
-              fontWeight: 700,
-            }}
-          >
-            Hidden Gem Map
           </button>
         </div>
       </div>
@@ -1354,148 +2339,1429 @@ const MapScreen = ({ go }) => {
         </div>
       </div>
 
-      {/* Anti-overtourism alert */}
-      <div style={{ padding: "0 20px", marginBottom: 10 }}>
-        <div style={{ background: "#FFF7E0", border: `1px solid ${C.yellow}`, borderRadius: 14, padding: 12, display: "flex", gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: "50%", background: C.yellow, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <AlertTriangle size={15} color={C.ink} />
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>High crowds nearby</div>
-            <div style={{ fontSize: 11, color: C.slate, marginTop: 2 }}>Sagrada Familia ~90 min wait. Want a local alternative?</div>
+      {/* ANTI-OVERTOURISM ALERT — moved higher, more visual weight */}
+      <div style={{ padding: "0 20px", marginTop: 8, marginBottom: 14 }}>
+        <div
+          style={{
+            background: `linear-gradient(135deg, #FFF1D0 0%, #FFE08A 100%)`,
+            border: `2px solid #FFB300`,
+            borderRadius: 16, padding: 14,
+            display: "flex", gap: 12,
+            boxShadow: "0 6px 20px rgba(255, 179, 0, 0.18)",
+            position: "relative", overflow: "hidden",
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "#8A5A00", letterSpacing: 0.8, fontFamily: "'JetBrains Mono', monospace", display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{
+                display: "inline-block", width: 8, height: 8, borderRadius: "50%",
+                background: "#FFB300",
+                animation: "breathGlow 2.4s ease-in-out infinite",
+              }} />
+              TRAVEL SMART
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 900, color: C.ink, letterSpacing: -0.2, marginTop: 4 }}>
+              ⚠️ High crowds at Sagrada Família
+            </div>
+            <div style={{ fontSize: 11.5, color: "#5A3D00", marginTop: 3, lineHeight: 1.4 }}>
+              ~90 min wait right now. We found <b>3 local-loved alternatives</b> within 10 min walk.
+            </div>
+            <button style={{
+              all: "unset", cursor: "pointer",
+              display: "inline-flex", alignItems: "center", gap: 4,
+              marginTop: 8, padding: "5px 12px",
+              background: C.ink, color: "#fff",
+              fontSize: 11, fontWeight: 800, borderRadius: 16,
+            }}>
+              See alternatives <ArrowRight size={11} />
+            </button>
           </div>
         </div>
       </div>
 
       <div style={{ padding: "2px 20px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-          <Spark size={12} color={C.pink} />
-          <div style={{ fontSize: 14, fontWeight: 800, color: C.ink }}>Local Favorites Nearby</div>
-        </div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 2 }}>Local Favorites Nearby</div>
         <div style={{ fontSize: 11, color: C.slate, marginBottom: 10 }}>Based on your location and time of day</div>
         {[
-          { name: "Café Martinho da Arcada", type: "Traditional Café", quote: "\"Lisbon's oldest café. Best pastel de nata.\"", rec: "Maria S.", stars: 4.8 },
-          { name: "LX Factory", type: "Creative district", quote: "\"Skip the crowds — everyone's real life here.\"", rec: "Pedro R.", stars: 4.7 },
-          { name: "Mercado de Campo de Ourique", type: "Food market", quote: "\"Where we actually eat lunch.\"", rec: "Ines G.", stars: 4.9 },
-        ].map((p, i) => (
-          <div key={i} style={{ display: "flex", gap: 10, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 10, marginBottom: 8 }}>
-            <div style={{ width: 64, height: 64, borderRadius: 12, background: `linear-gradient(135deg, ${i === 0 ? C.pinkSoft : i === 1 ? C.lavender : C.yellow}, ${C.pink})`, flexShrink: 0, position: "relative" }}>
-              <div style={{ position: "absolute", top: 4, left: 4, background: "#fff", borderRadius: 20, padding: "2px 5px", fontSize: 9, fontWeight: 800, color: "#1A7A3E", display: "flex", alignItems: "center", gap: 2 }}>
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.lime, border: "1px solid #1A7A3E" }} />
-                Verified
-              </div>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{p.name}</div>
-                <div style={{ fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", gap: 2 }}>
-                  <Star size={11} fill={C.yellow} color={C.yellow} /> {p.stars}
+          {
+            name: "Café Martinho da Arcada",
+            category: "café",
+            quote: "Lisbon's oldest café. Best pastel de nata.",
+            rec: "Maria S.",
+            recInitial: "M",
+            recColor: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`,
+            recVerifiedReviews: 142,
+            stars: 4.8,
+            // Berlin café interior — atmospheric, natural light (by Nikita Pishchugin on Unsplash)
+            photo: "https://images.unsplash.com/photo-1775059956734-78ffd2075cec?fm=jpg&q=70&w=600&auto=format&fit=crop",
+            fallback: `linear-gradient(135deg, ${C.pinkSoft}, ${C.pink})`,
+          },
+          {
+            name: "Bunkers del Carmel",
+            category: "viewpoint",
+            quote: "Skip the crowds — sunrise here is unreal.",
+            rec: "Pedro R.",
+            recInitial: "P",
+            recColor: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})`,
+            recVerifiedReviews: 34,
+            stars: 4.7,
+            // Rooftop city sunset (by Jessica Christian on Unsplash)
+            photo: "https://images.unsplash.com/photo-1756072226051-f6835aec4f9a?fm=jpg&q=70&w=600&auto=format&fit=crop",
+            fallback: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})`,
+          },
+          {
+            name: "Mercado de la Boqueria",
+            category: "market",
+            quote: "Where we actually shop. Back stalls, not front.",
+            rec: "Ines G.",
+            recInitial: "I",
+            recColor: `linear-gradient(135deg, ${C.yellow}, ${C.pink})`,
+            recVerifiedReviews: 89,
+            stars: 4.9,
+            // Market stall food shopping (by Artiom Vallat on Unsplash)
+            photo: "https://images.unsplash.com/photo-1750112646313-5fb151a21f13?fm=jpg&q=70&w=600&auto=format&fit=crop",
+            fallback: `linear-gradient(135deg, ${C.yellow}, ${C.pink})`,
+          },
+        ].map((p, i) => {
+          // Category metadata for tag pills
+          const categories = {
+            café:       { label: "Café",       emoji: "☕", color: "#8B5E3C", bg: "#FFF3E5" },
+            bar:        { label: "Bar",        emoji: "🍷", color: "#7A1F4A", bg: "#FFE0F0" },
+            restaurant: { label: "Restaurant", emoji: "🍴", color: "#A33333", bg: "#FFE8E8" },
+            bakery:     { label: "Bakery",     emoji: "🥐", color: "#A67013", bg: "#FFF4D6" },
+            market:     { label: "Market",     emoji: "🛍️", color: "#1A7A3E", bg: "#E5F5E5" },
+            viewpoint:  { label: "Viewpoint",  emoji: "🌅", color: "#5A3FA8", bg: "#EFE5FA" },
+          };
+          const cat = categories[p.category] || categories.café;
+          return (
+            <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 16, marginBottom: 12, position: "relative", overflow: "hidden" }}>
+              {/* Wishlist heart — top right of photo */}
+              <button
+                onClick={() => toggleSave("local-" + i)}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  position: "absolute", top: 10, right: 10, zIndex: 5,
+                  width: 30, height: 30, borderRadius: "50%",
+                  background: saved["local-" + i] ? C.pink : "rgba(255,255,255,0.92)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 2px 8px rgba(15,11,38,0.18)",
+                  backdropFilter: "blur(6px)",
+                }}
+                aria-label={saved["local-" + i] ? "Remove from wishlist" : "Save to wishlist"}
+              >
+                <Heart size={15} color={saved["local-" + i] ? "#fff" : C.ink} fill={saved["local-" + i] ? "#fff" : "none"} />
+              </button>
+
+              {/* Hero photo with fallback gradient + category pill */}
+              <div style={{ height: 130, background: p.fallback, position: "relative", overflow: "hidden" }}>
+                <img
+                  src={p.photo}
+                  alt={p.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+                {/* gradient overlay for text legibility on photo */}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.45) 100%)" }} />
+                {/* CATEGORY PILL — top left, prominent */}
+                <div style={{ position: "absolute", top: 10, left: 10, display: "flex", gap: 6 }}>
+                  <div style={{
+                    background: cat.bg, color: cat.color,
+                    fontSize: 11, fontWeight: 800,
+                    padding: "4px 9px", borderRadius: 14,
+                    display: "flex", alignItems: "center", gap: 4,
+                    boxShadow: "0 2px 6px rgba(15,11,38,0.12)",
+                  }}>
+                    <span>{cat.emoji}</span> {cat.label}
+                  </div>
+                  {/* LOCAL VERIFIED — now also on the photo, much more visible */}
+                  <div style={{
+                    background: C.lime, color: "#1A7A3E",
+                    border: "1.5px solid #1A7A3E",
+                    fontSize: 10, fontWeight: 900, letterSpacing: 0.4,
+                    padding: "4px 8px", borderRadius: 14,
+                    display: "flex", alignItems: "center", gap: 3,
+                    boxShadow: "0 2px 6px rgba(15,11,38,0.12)",
+                  }}>
+                    <CheckCircle2 size={11} color="#1A7A3E" fill="#fff" strokeWidth={2.5} /> VERIFIED LOCAL
+                  </div>
                 </div>
               </div>
-              <div style={{ fontSize: 11, color: C.pink, fontWeight: 700, marginTop: 1 }}>{p.type}</div>
-              <div style={{ fontSize: 11, color: C.slate, marginTop: 3, fontStyle: "italic" }}>{p.quote}</div>
-              <div style={{ fontSize: 10, color: C.indigo, fontWeight: 700, marginTop: 3 }}>Recommended by {p.rec}</div>
+
+              {/* Body */}
+              <div style={{ padding: "12px 14px 14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: C.ink, letterSpacing: -0.2 }}>{p.name}</div>
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
+                    <Star size={12} fill={C.yellow} color={C.yellow} /> {p.stars}
+                  </div>
+                </div>
+
+                {/* RECOMMENDED-BY TESTIMONIAL CARD — much more prominent than before */}
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  background: C.pinkBg, borderRadius: 12,
+                  padding: "8px 10px", marginTop: 10,
+                }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: "50%",
+                    background: p.recColor, flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: "#fff", fontSize: 13, fontWeight: 900,
+                    border: "2px solid #fff",
+                    boxShadow: "0 2px 6px rgba(15,11,38,0.12)",
+                  }}>
+                    {p.recInitial}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: C.indigo, letterSpacing: 0.4, fontFamily: "'JetBrains Mono', monospace" }}>
+                      RECOMMENDED BY {p.rec.toUpperCase()}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+                      <span style={{
+                        background: C.lime, color: "#1A7A3E",
+                        border: "1px solid #1A7A3E",
+                        fontSize: 8, fontWeight: 900, letterSpacing: 0.3,
+                        padding: "1px 5px", borderRadius: 8,
+                      }}>
+                        ◆ GOLD LOCAL
+                      </span>
+                      <span style={{ fontSize: 9.5, color: C.slate }}>
+                        {p.recVerifiedReviews} verified reviews
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, color: C.ink, fontStyle: "italic", marginTop: 4, lineHeight: 1.35 }}>
+                      "{p.quote}"
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Screen>
   );
 };
 
 // ---------- ITINERARY PLANNER ----------
-const ItineraryScreen = ({ go }) => (
-  <Screen>
-    <StatusBar />
-    <BackHeader onBack={() => go("map")} />
-    <div style={{ padding: "4px 20px 0" }}>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button style={{ all: "unset", padding: "8px 14px", borderRadius: 22, background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`, color: "#fff", fontSize: 12.5, fontWeight: 700 }}>
-          Itinerary Planner
-        </button>
+const ItineraryScreen = ({ go }) => {
+  // Two views: "gallery" (default landing, lists all trips) and "editor" (day-by-day)
+  const [view, setView] = useState("gallery");
+  // Filter for gallery: all | upcoming | past
+  const [filter, setFilter] = useState("all");
+  // Which trip's ⋯ menu is open
+  const [menuOpenFor, setMenuOpenFor] = useState(null);
+  // Trip-level state — each trip is a self-contained workspace with its own days.
+  const [activeTrip, setActiveTrip] = useState(0);
+  const [activeDay, setActiveDay] = useState(0);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [trips, setTrips] = useState([
+    {
+      name: "Barcelona Trip",
+      destination: "Barcelona, Spain",
+      dateRange: "Jun 7–11",
+      flag: "🇪🇸",
+      status: "upcoming",
+      current: true,
+      // Mediterranean blue-to-terracotta vibe
+      theme: `linear-gradient(160deg, #FFD89B 0%, #FF8A8A 35%, #EE3A8A 70%, #3B2EE5 100%)`,
+      collaborators: [
+        { name: "Vy", color: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`, initial: "V" },
+        { name: "Dani", color: `linear-gradient(135deg, ${C.indigo}, ${C.pinkSoft})`, initial: "D" },
+      ],
+      days: [
+        {
+          date: "Sat · Jun 7",
+          title: "Gothic Quarter & tapas",
+          activities: [
+            { id: "B1a", time: "10:00 AM", title: "Walk through Barri Gòtic", tag: "LANDMARK", busy: "Off-peak", color: C.indigo, addedBy: null },
+            { id: "B1b", time: "1:30 PM", title: "La Cova Fumada (tapas)", tag: "GOLD LOCAL", busy: "~€22", color: C.pink, addedBy: "Dani" },
+            { id: "B1c", time: "5:00 PM", title: "Sunset at Bunkers del Carmel", tag: "HIDDEN GEM", busy: "Sunrise > sunset", color: C.indigo, addedBy: null },
+          ],
+        },
+        {
+          date: "Sun · Jun 8",
+          title: "Gaudí day",
+          activities: [
+            { id: "B2a", time: "9:30 AM", title: "Sagrada Família (book ahead)", tag: "LANDMARK", busy: "~€26", color: C.pink, addedBy: null },
+            { id: "B2b", time: "1:00 PM", title: "Lunch in Gràcia", tag: "EXPERIENCE", busy: "~€18", color: C.indigo, addedBy: null },
+            { id: "B2c", time: "3:30 PM", title: "Park Güell", tag: "LANDMARK", busy: "Reserve slot", color: C.pink, addedBy: "Dani" },
+          ],
+        },
+        {
+          date: "Mon · Jun 9",
+          title: "Beach + Born",
+          activities: [
+            { id: "B3a", time: "11:00 AM", title: "Barceloneta beach", tag: "EXPERIENCE", busy: "Crowded after 1pm", color: C.indigo, addedBy: null },
+            { id: "B3b", time: "8:00 PM", title: "Vermouth at Bar del Pla", tag: "LOCAL VERIFIED", busy: "~€15", color: C.pink, addedBy: "Dani" },
+          ],
+        },
+        {
+          date: "Tue · Jun 10",
+          title: "Markets & Montjuïc",
+          activities: [
+            { id: "B4a", time: "10:00 AM", title: "Boqueria back stalls (with El Quim)", tag: "LOCAL TIP", busy: "Avoid the front", color: C.pink, addedBy: null },
+            { id: "B4b", time: "4:00 PM", title: "Montjuïc cable car + castle", tag: "EXPERIENCE", busy: "~€14", color: C.indigo, addedBy: null },
+          ],
+        },
+        {
+          date: "Wed · Jun 11",
+          title: "Last day & flight",
+          activities: [
+            { id: "B5a", time: "10:00 AM", title: "Brunch at Brunch & Cake", tag: "LOCAL VERIFIED", busy: "~€18", color: C.pink, addedBy: "Dani" },
+            { id: "B5b", time: "2:00 PM", title: "Flight home", tag: "TRANSPORT", busy: "BCN → AMS", color: C.indigo, addedBy: null },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Lisbon Trip",
+      destination: "Lisbon, Portugal",
+      dateRange: "Jul 16–18",
+      flag: "🇵🇹",
+      status: "upcoming",
+      // Sunset-over-tiled-roofs vibe
+      theme: `linear-gradient(160deg, #F4B6D0 0%, #F4A6DC 35%, #C78BFF 70%, #5A3FA8 100%)`,
+      collaborators: [
+        { name: "Vy", color: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`, initial: "V" },
+        { name: "Quynh", color: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})`, initial: "Q" },
+        { name: "Christine", color: `linear-gradient(135deg, ${C.yellow}, ${C.pink})`, initial: "C" },
+      ],
+      days: [
+        {
+          date: "Fri · Jul 16",
+          title: "Belém & the river",
+          activities: [
+            { id: "L1a", time: "9:00 AM", title: "Belém & Jerónimos Monastery", tag: "LANDMARK", busy: "Off-peak", color: C.indigo, addedBy: null },
+            { id: "L1b", time: "12:30 PM", title: "Pastéis de Belém (local pick)", tag: "HIDDEN GEM", busy: "Low crowds · ~€3.50", color: C.pink, addedBy: "Quynh" },
+            { id: "L1c", time: "3:00 PM", title: "Tram 28 through Alfama", tag: "EXPERIENCE", busy: "Medium", color: C.indigo, addedBy: null },
+            { id: "L1d", time: "7:30 PM", title: "Fado dinner in Bairro Alto", tag: "LOCAL VERIFIED", busy: "Reserve ahead · ~€38", color: C.pink, addedBy: null },
+          ],
+        },
+        {
+          date: "Sat · Jul 17",
+          title: "Alfama & Sintra day trip",
+          activities: [
+            { id: "L2a", time: "8:30 AM", title: "Train to Sintra", tag: "TRANSPORT", busy: "Early start", color: C.indigo, addedBy: null },
+            { id: "L2b", time: "10:00 AM", title: "Pena Palace", tag: "LANDMARK", busy: "Book ahead", color: C.pink, addedBy: "Christine" },
+            { id: "L2c", time: "2:00 PM", title: "Quinta da Regaleira gardens", tag: "HIDDEN GEM", busy: "Off-peak", color: C.indigo, addedBy: null },
+            { id: "L2d", time: "6:00 PM", title: "Travesseiros at Piriquita", tag: "LOCAL TIP", busy: "~€2.50", color: C.pink, addedBy: "Quynh" },
+          ],
+        },
+        {
+          date: "Sun · Jul 18",
+          title: "Beach day in Cascais",
+          activities: [
+            { id: "L3a", time: "10:00 AM", title: "Cascais beach + boardwalk", tag: "EXPERIENCE", busy: "Bring sunscreen", color: C.indigo, addedBy: null },
+            { id: "L3b", time: "1:30 PM", title: "Seafood lunch at Mar do Inferno", tag: "LOCAL VERIFIED", busy: "~€32", color: C.pink, addedBy: null },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Rome Trip",
+      destination: "Rome, Italy",
+      dateRange: "Sep 12–15",
+      flag: "🇮🇹",
+      status: "upcoming",
+      // Golden Roman ochre vibe
+      theme: `linear-gradient(160deg, #FFE9A8 0%, #FFB347 40%, #C7634A 75%, #5A2A1F 100%)`,
+      collaborators: [
+        { name: "Vy", color: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`, initial: "V" },
+      ],
+      days: [
+        {
+          date: "Fri · Sep 12",
+          title: "Ancient Rome",
+          activities: [
+            { id: "R1a", time: "9:00 AM", title: "Colosseum (skip-the-line)", tag: "LANDMARK", busy: "~€24", color: C.indigo, addedBy: null },
+            { id: "R1b", time: "12:30 PM", title: "Roman Forum walk", tag: "LANDMARK", busy: "Combined ticket", color: C.pink, addedBy: null },
+            { id: "R1c", time: "7:00 PM", title: "Cacio e pepe in Trastevere", tag: "EXPERIENCE", busy: "~€16", color: C.indigo, addedBy: null },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Paris Trip",
+      destination: "Paris, France",
+      dateRange: "Mar 4–7",
+      flag: "🇫🇷",
+      status: "past",
+      // Soft moody Paris evening vibe
+      theme: `linear-gradient(160deg, #C7D4F5 0%, #9BA8D6 35%, #5E5A8C 70%, #2A2552 100%)`,
+      collaborators: [
+        { name: "Vy", color: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`, initial: "V" },
+        { name: "Abi", color: `linear-gradient(135deg, ${C.lime}, ${C.indigo})`, initial: "A" },
+      ],
+      days: [
+        {
+          date: "Mon · Mar 4",
+          title: "Left Bank",
+          activities: [
+            { id: "P1a", time: "10:00 AM", title: "Musée d'Orsay", tag: "LANDMARK", busy: "~€16", color: C.indigo, addedBy: null },
+            { id: "P1b", time: "1:00 PM", title: "Lunch at Le Comptoir", tag: "LOCAL VERIFIED", busy: "~€28", color: C.pink, addedBy: "Abi" },
+            { id: "P1c", time: "4:00 PM", title: "Jardin du Luxembourg", tag: "EXPERIENCE", busy: "Quiet weekday", color: C.indigo, addedBy: null },
+          ],
+        },
+        {
+          date: "Tue · Mar 5",
+          title: "Marais wandering",
+          activities: [
+            { id: "P2a", time: "11:00 AM", title: "Place des Vosges", tag: "HIDDEN GEM", busy: "Free", color: C.pink, addedBy: null },
+            { id: "P2b", time: "3:00 PM", title: "L'As du Fallafel", tag: "LOCAL TIP", busy: "~€9 · best falafel", color: C.indigo, addedBy: "Abi" },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  const currentTrip = trips[activeTrip];
+  const currentDay = currentTrip.days[Math.min(activeDay, currentTrip.days.length - 1)];
+
+  // When switching trips, reset to that trip's day 1
+  const switchTrip = (idx) => {
+    setActiveTrip(idx);
+    setActiveDay(0);
+    setView("editor");
+    setMenuOpenFor(null);
+  };
+
+  const openGallery = () => {
+    setView("gallery");
+    setMenuOpenFor(null);
+  };
+
+  // Editing helpers — operate on the active trip's active day's activity list
+  const updateActivities = (newActivities) => {
+    const newTrips = [...trips];
+    const newDays = [...newTrips[activeTrip].days];
+    newDays[activeDay] = { ...newDays[activeDay], activities: newActivities };
+    newTrips[activeTrip] = { ...newTrips[activeTrip], days: newDays };
+    setTrips(newTrips);
+  };
+
+  const removeActivity = (id) => {
+    updateActivities(currentDay.activities.filter((a) => a.id !== id));
+  };
+
+  const moveActivity = (id, direction) => {
+    const list = [...currentDay.activities];
+    const idx = list.findIndex((a) => a.id === id);
+    const swap = idx + direction;
+    if (swap < 0 || swap >= list.length) return;
+    [list[idx], list[swap]] = [list[swap], list[idx]];
+    updateActivities(list);
+  };
+
+  const addActivity = () => {
+    const placeholder = {
+      id: "new-" + Date.now(),
+      time: "—",
+      title: "New activity",
+      tag: "ADD DETAILS",
+      busy: "Tap to set time & place",
+      color: C.indigo,
+      addedBy: "Vy",
+    };
+    updateActivities([...currentDay.activities, placeholder]);
+  };
+
+  const addDay = () => {
+    const newTrips = [...trips];
+    newTrips[activeTrip] = {
+      ...newTrips[activeTrip],
+      days: [
+        ...newTrips[activeTrip].days,
+        {
+          date: `Day ${newTrips[activeTrip].days.length + 1}`,
+          title: "New day",
+          activities: [],
+        },
+      ],
+    };
+    setTrips(newTrips);
+    setActiveDay(newTrips[activeTrip].days.length - 1);
+  };
+
+  const addTrip = () => {
+    const newTrip = {
+      name: "New trip",
+      destination: "Pick a destination",
+      dateRange: "Set dates",
+      flag: "✈️",
+      status: "upcoming",
+      theme: `linear-gradient(160deg, ${C.pinkSoft} 0%, ${C.lavender} 50%, ${C.indigo} 100%)`,
+      collaborators: [
+        { name: "Vy", color: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`, initial: "V" },
+      ],
+      days: [
+        { date: "Day 1", title: "New day", activities: [] },
+      ],
+    };
+    setTrips([...trips, newTrip]);
+    setActiveTrip(trips.length);
+    setActiveDay(0);
+    setView("editor");
+  };
+
+  const deleteTrip = (idx) => {
+    if (!confirm(`Delete "${trips[idx].name}"? This cannot be undone.`)) return;
+    const newTrips = trips.filter((_, i) => i !== idx);
+    if (newTrips.length === 0) {
+      // Don't allow zero trips — add a fresh empty one
+      newTrips.push({
+        name: "New trip",
+        destination: "Pick a destination",
+        dateRange: "Set dates",
+        flag: "✈️",
+        status: "upcoming",
+        theme: `linear-gradient(160deg, ${C.pinkSoft} 0%, ${C.lavender} 50%, ${C.indigo} 100%)`,
+        collaborators: [{ name: "Vy", color: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`, initial: "V" }],
+        days: [{ date: "Day 1", title: "New day", activities: [] }],
+      });
+    }
+    setTrips(newTrips);
+    setActiveTrip(0);
+    setActiveDay(0);
+    setMenuOpenFor(null);
+  };
+
+  return (
+    <Screen>
+      <StatusBar />
+      <div style={{ padding: "10px 20px 0" }}>
+        {/* Shared "Explore & Plan" header — mirrors the Hidden Gem Map side */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.pink, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace" }}>
+              <Spark size={11} color={C.pink} /> EXPLORE & PLAN
+            </div>
+            <h1 style={{ fontSize: 22, margin: "2px 0 0", fontWeight: 900, color: C.ink, letterSpacing: -0.5 }}>Currently in Barcelona</h1>
+          </div>
+        </div>
+
+        {/* Sibling toggle — Hidden Gem Map left, Itinerary Planner right */}
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => go("map")}
+            style={{ all: "unset", cursor: "pointer", padding: "8px 14px", borderRadius: 22, border: `1px solid ${C.border}`, fontSize: 12.5, fontWeight: 700, color: C.ink }}
+          >
+            Hidden Gem Map
+          </button>
+          <button style={{ all: "unset", padding: "8px 14px", borderRadius: 22, background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`, color: "#fff", fontSize: 12.5, fontWeight: 700 }}>
+            Itinerary Planner
+          </button>
+        </div>
+
+        {view === "gallery" ? (
+          <>
+            {/* Gallery header: title left + New Trip button right */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, marginBottom: 12 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: C.ink, margin: 0 }}>Your Trips</h2>
+              <button
+                onClick={addTrip}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 5,
+                  background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+                  color: "#fff",
+                  fontSize: 12, fontWeight: 800,
+                  padding: "8px 14px", borderRadius: 22,
+                  boxShadow: "0 4px 12px rgba(238,58,138,0.22)",
+                }}
+              >
+                <Plus size={13} strokeWidth={3} /> New Trip
+              </button>
+            </div>
+
+            {/* Filter row */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <div style={{ fontSize: 11, color: C.slate }}>
+                {trips.filter((t) => filter === "all" || t.status === filter).length} of {trips.length} trips
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[
+                  { k: "all", label: "All" },
+                  { k: "upcoming", label: "Upcoming" },
+                  { k: "past", label: "Past" },
+                ].map((f) => (
+                  <button
+                    key={f.k}
+                    onClick={() => setFilter(f.k)}
+                    style={{
+                      all: "unset", cursor: "pointer",
+                      padding: "6px 12px", borderRadius: 16,
+                      fontSize: 11.5, fontWeight: 800,
+                      background: filter === f.k ? C.indigo : "#fff",
+                      color: filter === f.k ? "#fff" : C.ink,
+                      border: filter === f.k ? "none" : `1px solid ${C.border}`,
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Trip cards — large image-based vertical list */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingBottom: 12 }}>
+              {trips
+                .map((t, originalIdx) => ({ t, originalIdx }))
+                .filter(({ t }) => filter === "all" || t.status === filter)
+                .map(({ t, originalIdx }) => {
+                  const activityCount = t.days.reduce((sum, d) => sum + d.activities.length, 0);
+                  const menuOpen = menuOpenFor === originalIdx;
+                  return (
+                    <div key={originalIdx} style={{ position: "relative" }}>
+                      <button
+                        onClick={() => switchTrip(originalIdx)}
+                        style={{
+                          all: "unset", cursor: "pointer",
+                          display: "block", width: "100%", boxSizing: "border-box",
+                          height: 200, borderRadius: 18,
+                          background: t.theme,
+                          position: "relative", overflow: "hidden",
+                          boxShadow: t.current
+                            ? `0 0 0 3px ${C.pink}, 0 12px 32px rgba(238,58,138,0.32), 0 8px 24px rgba(15,11,38,0.18)`
+                            : "0 8px 24px rgba(15,11,38,0.12)",
+                        }}
+                      >
+                        {/* Soft glow overlay for depth */}
+                        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35), transparent 55%)" }} />
+
+                        {/* Past trip dimmer */}
+                        {t.status === "past" && (
+                          <div style={{ position: "absolute", inset: 0, background: "rgba(15,11,38,0.18)" }} />
+                        )}
+
+                        {/* Status pill (top-left) — "Currently here" gets priority over plain UPCOMING */}
+                        <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6, alignItems: "center" }}>
+                          {t.current ? (
+                            <div style={{
+                              background: "#fff",
+                              color: C.pink,
+                              border: `1.5px solid ${C.pink}`,
+                              fontSize: 9.5, fontWeight: 900, letterSpacing: 0.5,
+                              padding: "3px 9px", borderRadius: 12,
+                              display: "flex", alignItems: "center", gap: 3,
+                              boxShadow: "0 2px 8px rgba(238,58,138,0.25)",
+                            }}>
+                              <MapPin size={10} fill={C.pink} color={C.pink} /> CURRENTLY HERE
+                            </div>
+                          ) : (
+                            <div style={{
+                              background: t.status === "upcoming" ? C.lime : "rgba(255,255,255,0.9)",
+                              color: t.status === "upcoming" ? "#1A7A3E" : C.slate,
+                              border: t.status === "upcoming" ? "1px solid #1A7A3E" : "none",
+                              fontSize: 9, fontWeight: 800, letterSpacing: 0.5,
+                              padding: "3px 8px", borderRadius: 12,
+                            }}>
+                              {t.status === "upcoming" ? "UPCOMING" : "PAST"}
+                            </div>
+                          )}
+                          <div style={{ fontSize: 18 }}>{t.flag}</div>
+                        </div>
+
+                        {/* Text content (bottom-left) */}
+                        <div style={{ position: "absolute", left: 16, right: 60, bottom: 14, color: "#fff", textShadow: "0 1px 6px rgba(0,0,0,0.35)" }}>
+                          <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: -0.4, lineHeight: 1.1 }}>{t.name}</div>
+                          <div style={{ fontSize: 12, opacity: 0.95, marginTop: 4, fontWeight: 600 }}>
+                            {t.destination} · {t.dateRange}
+                          </div>
+                          <div style={{ fontSize: 11, opacity: 0.9, marginTop: 2 }}>
+                            {t.days.length} days · {activityCount} activities
+                          </div>
+                        </div>
+
+                        {/* Collaborator avatars (bottom-right) */}
+                        <div style={{ position: "absolute", bottom: 14, right: 14, display: "flex" }}>
+                          {t.collaborators.slice(0, 3).map((c, j) => (
+                            <div
+                              key={j}
+                              style={{
+                                width: 24, height: 24, borderRadius: "50%", background: c.color,
+                                border: "2px solid #fff",
+                                marginLeft: j === 0 ? 0 : -6,
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                color: "#fff", fontSize: 10, fontWeight: 900,
+                              }}
+                            >
+                              {c.initial}
+                            </div>
+                          ))}
+                        </div>
+                      </button>
+
+                      {/* Three-dot menu button (top-right) — separate from card click area */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuOpenFor(menuOpen ? null : originalIdx);
+                        }}
+                        style={{
+                          all: "unset", cursor: "pointer",
+                          position: "absolute", top: 10, right: 10,
+                          width: 30, height: 30, borderRadius: "50%",
+                          background: "rgba(255,255,255,0.9)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          backdropFilter: "blur(8px)",
+                          boxShadow: "0 2px 8px rgba(15,11,38,0.15)",
+                        }}
+                        aria-label="More options"
+                      >
+                        <MoreVertical size={15} color={C.ink} />
+                      </button>
+
+                      {/* Popover menu */}
+                      {menuOpen && (
+                        <>
+                          {/* Backdrop to dismiss */}
+                          <div
+                            onClick={() => setMenuOpenFor(null)}
+                            style={{ position: "fixed", inset: 0, zIndex: 40 }}
+                          />
+                          <div
+                            style={{
+                              position: "absolute", top: 46, right: 10,
+                              background: "#fff", borderRadius: 12,
+                              boxShadow: "0 10px 30px rgba(15,11,38,0.18)",
+                              border: `1px solid ${C.border}`,
+                              minWidth: 180, zIndex: 50,
+                              padding: 4, overflow: "hidden",
+                            }}
+                          >
+                            {[
+                              { Icon: Pencil, label: "Edit dates", onClick: () => { switchTrip(originalIdx); } },
+                              { Icon: Calendar, label: "Edit activities", onClick: () => { switchTrip(originalIdx); } },
+                              { Icon: UserPlus, label: "Manage collaborators", onClick: () => { switchTrip(originalIdx); setTimeout(() => setShowInviteModal(true), 100); } },
+                              { Icon: Trash2, label: "Delete trip", danger: true, onClick: () => deleteTrip(originalIdx) },
+                            ].map((it, k) => (
+                              <button
+                                key={k}
+                                onClick={(e) => { e.stopPropagation(); it.onClick(); }}
+                                style={{
+                                  all: "unset", cursor: "pointer",
+                                  display: "flex", alignItems: "center", gap: 10,
+                                  padding: "10px 12px", borderRadius: 8,
+                                  fontSize: 12.5, fontWeight: 700,
+                                  color: it.danger ? "#D43A3A" : C.ink,
+                                  width: "100%", boxSizing: "border-box",
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = it.danger ? "#FFEEEE" : C.pinkBg}
+                                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                              >
+                                <it.Icon size={14} color={it.danger ? "#D43A3A" : C.slate} />
+                                {it.label}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+
+              {/* Empty state for filter with no results */}
+              {trips.filter((t) => filter === "all" || t.status === filter).length === 0 && (
+                <div style={{ background: C.pinkBg, border: `1px dashed ${C.pink}`, borderRadius: 14, padding: 24, textAlign: "center" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>No {filter} trips</div>
+                  <div style={{ fontSize: 11, color: C.slate, marginTop: 2 }}>Try switching the filter above</div>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+        <>
+        {/* ───────── EDITOR VIEW ───────── */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, marginBottom: 12 }}>
+          <button
+            onClick={openGallery}
+            style={{
+              all: "unset", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 4,
+              color: C.indigo, fontWeight: 800, fontSize: 13,
+            }}
+          >
+            <ChevronLeft size={16} /> Back to trips
+          </button>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.ink, display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 14 }}>{currentTrip.flag}</span>
+            <span>{currentTrip.name}</span>
+          </div>
+        </div>
+
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: C.ink, margin: "0 0 10px" }}>Plan Your Adventure</h2>
+
+        {/* Active trip — destination + dates */}
+        <div style={{ background: "#F4F2FB", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <MapPin size={14} color={C.slate} />
+          <span style={{ fontSize: 13, color: C.ink, fontWeight: 600 }}>{currentTrip.destination}</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <div style={{ flex: 1, background: "#F4F2FB", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+            <Calendar size={14} color={C.slate} />
+            <span style={{ fontSize: 13, color: C.ink }}>{currentTrip.dateRange}</span>
+          </div>
+          <div style={{ flex: 1, background: "#F4F2FB", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+            <Clock size={14} color={C.slate} />
+            <span style={{ fontSize: 13, color: C.ink }}>{currentTrip.days.length} days</span>
+          </div>
+        </div>
+
+        {/* Collaborators row — per-trip */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "8px 12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex" }}>
+              {currentTrip.collaborators.map((c, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: 26, height: 26, borderRadius: "50%", background: c.color,
+                    border: "2px solid #fff",
+                    marginLeft: i === 0 ? 0 : -8,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: "#fff", fontSize: 11, fontWeight: 900,
+                  }}
+                >
+                  {c.initial}
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.3 }}>
+              <div style={{ fontWeight: 700, color: C.ink }}>{currentTrip.collaborators.length === 1 ? "Just you" : "Planning together"}</div>
+              <div>{currentTrip.collaborators.map((c) => c.name).join(", ")}</div>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowInviteModal(true)}
+            style={{
+              all: "unset", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 4,
+              background: C.indigo, color: "#fff",
+              fontSize: 11, fontWeight: 800,
+              padding: "6px 10px", borderRadius: 16,
+            }}
+          >
+            <UserPlus size={12} /> Invite
+          </button>
+        </div>
+
+        {/* Wishlist quick access */}
         <button
-          onClick={() => go("map")}
-          style={{ all: "unset", cursor: "pointer", padding: "8px 14px", borderRadius: 22, border: `1px solid ${C.border}`, fontSize: 12.5, fontWeight: 700, color: C.ink }}
+          onClick={() => alert("Opens your saved places. (Tap heart icons on any spot to wishlist it.)")}
+          style={{
+            all: "unset", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 10,
+            width: "100%", boxSizing: "border-box",
+            background: C.pinkBg, border: `1px dashed ${C.pink}`,
+            borderRadius: 12, padding: "10px 12px",
+            marginBottom: 14,
+          }}
         >
-          Hidden Gem Map
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: C.pink, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Bookmark size={14} color="#fff" fill="#fff" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: C.ink }}>Pull from wishlist · 7 saved</div>
+            <div style={{ fontSize: 10.5, color: C.slate, marginTop: 1 }}>Add saved places to any day</div>
+          </div>
+          <ArrowRight size={14} color={C.pink} />
+        </button>
+
+        {/* Day tabs (within active trip) */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.slate, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace", marginBottom: 6 }}>
+          DAY-BY-DAY · {currentTrip.name.toUpperCase()}
+        </div>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6, marginBottom: 10 }}>
+          {currentTrip.days.map((d, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveDay(i)}
+              style={{
+                all: "unset", cursor: "pointer",
+                padding: "8px 12px", borderRadius: 16,
+                fontSize: 11.5, fontWeight: 800,
+                whiteSpace: "nowrap",
+                background: activeDay === i ? C.indigo : "#fff",
+                color: activeDay === i ? "#fff" : C.ink,
+                border: activeDay === i ? "none" : `1px solid ${C.border}`,
+                display: "flex", alignItems: "center", gap: 4,
+              }}
+            >
+              <span>Day {i + 1}</span>
+              <span style={{ opacity: 0.7, fontWeight: 600 }}>· {d.date}</span>
+            </button>
+          ))}
+          <button
+            onClick={addDay}
+            style={{
+              all: "unset", cursor: "pointer",
+              padding: "8px 12px", borderRadius: 16,
+              fontSize: 11.5, fontWeight: 800,
+              background: "#fff", color: C.indigo,
+              border: `1px dashed ${C.indigo}`,
+              display: "flex", alignItems: "center", gap: 4,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Plus size={12} /> Add day
+          </button>
+        </div>
+
+        {/* Day header */}
+        <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 2 }}>
+          <span style={{ background: `linear-gradient(90deg, ${C.pink}, ${C.indigo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            Day {activeDay + 1}: {currentDay.title}
+          </span>
+        </div>
+        <div style={{ fontSize: 11, color: C.slate, marginBottom: 10 }}>{currentDay.date} · {currentDay.activities.length} activities</div>
+
+        {/* Activities — editable */}
+        {currentDay.activities.length === 0 && (
+          <div style={{ background: C.pinkBg, border: `1px dashed ${C.pink}`, borderRadius: 14, padding: 20, textAlign: "center", marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>No activities yet</div>
+            <div style={{ fontSize: 11, color: C.slate, marginTop: 2 }}>Tap "Add activity" below to start planning this day</div>
+          </div>
+        )}
+
+        {currentDay.activities.map((a, i) => (
+          <div key={a.id} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 10, marginBottom: 8, display: "flex", gap: 8 }}>
+            {/* Reorder controls */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 2, justifyContent: "center", flexShrink: 0 }}>
+              <button
+                onClick={() => moveActivity(a.id, -1)}
+                disabled={i === 0}
+                style={{
+                  all: "unset", cursor: i === 0 ? "not-allowed" : "pointer",
+                  padding: 2, borderRadius: 4,
+                  opacity: i === 0 ? 0.25 : 1,
+                  color: C.slate,
+                  display: "flex",
+                }}
+                aria-label="Move up"
+              >
+                <ChevronUp size={14} />
+              </button>
+              <button
+                onClick={() => moveActivity(a.id, 1)}
+                disabled={i === currentDay.activities.length - 1}
+                style={{
+                  all: "unset", cursor: i === currentDay.activities.length - 1 ? "not-allowed" : "pointer",
+                  padding: 2, borderRadius: 4,
+                  opacity: i === currentDay.activities.length - 1 ? 0.25 : 1,
+                  color: C.slate,
+                  display: "flex",
+                }}
+                aria-label="Move down"
+              >
+                <ChevronDown size={14} />
+              </button>
+            </div>
+
+            {/* Time + tag */}
+            <div style={{ width: 54, flexShrink: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: a.color, fontFamily: "'JetBrains Mono', monospace" }}>{a.time}</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.slate, marginTop: 3, letterSpacing: 0.5 }}>{a.tag}</div>
+            </div>
+
+            {/* Content */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{a.title}</div>
+              <div style={{ fontSize: 11, color: C.slate, marginTop: 2 }}>{a.busy}</div>
+              {a.addedBy && (
+                <div style={{ fontSize: 10, color: C.indigo, fontWeight: 700, marginTop: 3, display: "flex", alignItems: "center", gap: 3 }}>
+                  <UserPlus size={9} /> Added by {a.addedBy}
+                </div>
+              )}
+            </div>
+
+            {/* Thumb */}
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: `linear-gradient(135deg, ${i % 2 ? C.lavender : C.pinkSoft}, ${a.color})`, flexShrink: 0 }} />
+
+            {/* Remove */}
+            <button
+              onClick={() => removeActivity(a.id)}
+              style={{
+                all: "unset", cursor: "pointer",
+                padding: 4, color: C.slate,
+                display: "flex", alignItems: "center",
+                alignSelf: "flex-start",
+              }}
+              aria-label="Remove"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+
+        {/* Add activity */}
+        <button
+          onClick={addActivity}
+          style={{
+            all: "unset", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            width: "100%", boxSizing: "border-box",
+            background: "#fff", border: `1px dashed ${C.indigo}`,
+            color: C.indigo, fontWeight: 800, fontSize: 13,
+            padding: "12px", borderRadius: 14,
+            marginTop: 4, marginBottom: 8,
+          }}
+        >
+          <Plus size={14} /> Add activity to Day {activeDay + 1}
+        </button>
+        </>
+        )}
+      </div>
+
+      {/* Invite modal */}
+      {showInviteModal && (
+        <div
+          onClick={() => setShowInviteModal(false)}
+          style={{
+            position: "absolute", inset: 0,
+            background: "rgba(15, 11, 38, 0.55)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 20, zIndex: 50,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: 20, padding: 18,
+              width: "100%", maxWidth: 320,
+              boxShadow: "0 20px 60px rgba(59,46,229,0.3)",
+            }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.pink, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace" }}>
+              <Spark size={11} color={C.pink} /> COLLABORATIVE PLANNING
+            </div>
+            <h3 style={{ margin: "4px 0 10px", fontSize: 18, fontWeight: 900, color: C.ink, letterSpacing: -0.3 }}>Invite friends to co-edit</h3>
+            <div style={{ fontSize: 12, color: C.slate, marginBottom: 14, lineHeight: 1.45 }}>
+              They'll be able to add activities, suggest swaps, and vote on plans. Everyone sees changes in real time.
+            </div>
+            <div style={{ background: "#F4F2FB", borderRadius: 12, padding: 10, fontSize: 12, color: C.ink, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+              <Languages size={14} color={C.slate} />
+              <span style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>bonvoy.app/join/LX-7K9P</span>
+              <button style={{ all: "unset", cursor: "pointer", color: C.indigo, fontWeight: 800, fontSize: 11 }}>COPY</button>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                style={{
+                  all: "unset", cursor: "pointer", flex: 1, textAlign: "center",
+                  padding: "10px", border: `1px solid ${C.border}`,
+                  color: C.ink, fontWeight: 700, fontSize: 12, borderRadius: 12,
+                }}
+              >
+                Close
+              </button>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                style={{
+                  all: "unset", cursor: "pointer", flex: 1, textAlign: "center",
+                  padding: "10px", background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+                  color: "#fff", fontWeight: 800, fontSize: 12, borderRadius: 12,
+                }}
+              >
+                Share link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Screen>
+  );
+};
+
+// ---------- REWARDS ----------
+const RewardsScreen = ({ go, userMode = "returning" }) => {
+  const isNew = userMode === "new";
+  const credits = isNew ? 0 : 1200;
+  const tierName = isNew ? "Bronze Local" : "Silver Local";
+  const nextTier = isNew ? "Silver Local" : "Gold Local";
+  const nextTierAt = isNew ? 500 : 1500;
+  const previousTierAt = isNew ? 0 : 500;
+  const progressPct = Math.min(100, Math.round(((credits - previousTierAt) / (nextTierAt - previousTierAt)) * 100));
+
+  // Voucher catalog — concrete offers from real local partners
+  const vouchers = [
+    {
+      id: "v10",
+      icon: "☕",
+      title: "Coffee and pastry",
+      euros: 10,
+      cost: 250,
+      hint: "Redeemable at BonVoy café partners in Barcelona",
+      bg: "#FFF3E5",
+      accent: "#8B5E3C",
+    },
+    {
+      id: "v20",
+      icon: "🍴",
+      title: "Restaurant dinner discount",
+      euros: 20,
+      cost: 500,
+      hint: "Redeemable at BonVoy dining partners in your destination city",
+      bg: "#FFE8E8",
+      accent: "#A33333",
+    },
+    {
+      id: "v35",
+      icon: "🧭",
+      title: "City experience or tour",
+      euros: 35,
+      cost: 850,
+      hint: "Walking tours, cooking classes & more · partner-curated",
+      bg: "#EFE5FA",
+      accent: "#5A3FA8",
+    },
+    {
+      id: "v60",
+      icon: "🛏️",
+      title: "One-night hotel discount",
+      euros: 60,
+      cost: 1500,
+      hint: "Independent stays in your destination city",
+      bg: "#E5F2FF",
+      accent: "#2E5B9A",
+    },
+  ];
+
+  return (
+    <Screen bg={C.cream}>
+      <StatusBar />
+      <div style={{ padding: "10px 20px 0" }}>
+        <button
+          onClick={() => go("home")}
+          style={{ all: "unset", cursor: "pointer", color: C.indigo, display: "flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 13 }}
+        >
+          <ChevronLeft size={16} /> Home
         </button>
       </div>
-      <h2 style={{ fontSize: 22, fontWeight: 800, color: C.ink, margin: "14px 0 10px" }}>Plan Your Adventure</h2>
-      <div style={{ background: "#F4F2FB", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <MapPin size={14} color={C.slate} />
-        <span style={{ fontSize: 13, color: C.ink, fontWeight: 600 }}>Lisbon, Portugal</span>
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        <div style={{ flex: 1, background: "#F4F2FB", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-          <Calendar size={14} color={C.slate} />
-          <span style={{ fontSize: 13, color: C.ink }}>Jul 14–20</span>
-        </div>
-        <div style={{ flex: 1, background: "#F4F2FB", borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-          <Clock size={14} color={C.slate} />
-          <span style={{ fontSize: 13, color: C.ink }}>7 days</span>
-        </div>
-      </div>
 
-      <div style={{ background: `linear-gradient(135deg, ${C.pinkBg}, #fff)`, borderRadius: 14, border: `1px solid ${C.border}`, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <Search size={14} color={C.slate} />
-        <span style={{ flex: 1, fontSize: 13, color: C.slate }}>Suggest ideas for Lisbon...</span>
-        <Spark size={14} color={C.pink} />
-      </div>
-
-      <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>
-        <span style={{ background: `linear-gradient(90deg, ${C.pink}, ${C.indigo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-          Your Personalized Lisbon Plan
-        </span>
-      </div>
-      <div style={{ fontSize: 11, color: C.slate, marginBottom: 10 }}>Friday · July 16</div>
-
-      {[
-        { time: "9:00 AM", title: "Belém & Jerónimos Monastery", tag: "LANDMARK", busy: "Off-peak", color: C.indigo },
-        { time: "12:30 PM", title: "Pastéis de Belém (local pick)", tag: "HIDDEN GEM", busy: "Low crowds", color: C.pink },
-        { time: "3:00 PM", title: "Tram 28 through Alfama", tag: "EXPERIENCE", busy: "Medium", color: C.indigo },
-        { time: "7:30 PM", title: "Fado dinner in Bairro Alto", tag: "LOCAL VERIFIED", busy: "Reserve ahead", color: C.pink },
-      ].map((a, i) => (
-        <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 10, marginBottom: 8, display: "flex", gap: 10 }}>
-          <div style={{ width: 60, flexShrink: 0 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: a.color, fontFamily: "'JetBrains Mono', monospace" }}>{a.time}</div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: C.slate, marginTop: 3, letterSpacing: 0.5 }}>{a.tag}</div>
+      {/* HERO — balance + tier */}
+      <div style={{ padding: "8px 20px 0" }}>
+        <div style={{
+          background: `linear-gradient(135deg, ${C.pink} 0%, ${C.indigo} 100%)`,
+          borderRadius: 22, padding: 18,
+          color: "#fff", position: "relative", overflow: "hidden",
+          boxShadow: "0 10px 28px rgba(59,46,229,0.22)",
+        }}>
+          <div style={{ position: "absolute", top: 12, right: 16, opacity: 0.4 }}>
+            <Spark size={22} color={C.yellow} />
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{a.title}</div>
-            <div style={{ fontSize: 11, color: C.slate, marginTop: 2 }}>{a.busy}</div>
+          <div style={{ position: "absolute", bottom: 10, right: 60, opacity: 0.3 }}>
+            <Spark size={14} color={C.lime} />
           </div>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: `linear-gradient(135deg, ${i % 2 ? C.lavender : C.pinkSoft}, ${a.color})`, flexShrink: 0 }} />
+
+          <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, fontFamily: "'JetBrains Mono', monospace", opacity: 0.9 }}>
+            CURRENT BALANCE
+          </div>
+          <div style={{ fontSize: 42, fontWeight: 900, letterSpacing: -1.2, lineHeight: 1, marginTop: 4 }}>
+            {credits}
+          </div>
+          <div style={{ fontSize: 12, opacity: 0.92, marginTop: 2 }}>credits earned through verified reviews</div>
+
+          {/* Tier row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14, padding: "10px 12px", background: "rgba(255,255,255,0.15)", borderRadius: 14, backdropFilter: "blur(8px)" }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: `linear-gradient(135deg, #D9D9E8, #ABABC4)`,
+              border: "2px solid #fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff", fontSize: 16, fontWeight: 900, flexShrink: 0,
+            }}>◆</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, letterSpacing: -0.2 }}>{tierName}</div>
+              <div style={{ fontSize: 10.5, opacity: 0.92 }}>{nextTierAt - credits} credits to {nextTier}</div>
+            </div>
+          </div>
+
+          {/* Progress */}
+          <div style={{ marginTop: 10 }}>
+            <div style={{ height: 7, borderRadius: 7, background: "rgba(255,255,255,0.25)", overflow: "hidden" }}>
+              <div style={{ width: `${progressPct}%`, height: "100%", background: `linear-gradient(90deg, ${C.yellow}, ${C.lime})`, borderRadius: 7, boxShadow: "0 0 8px rgba(255,224,61,0.5)" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9.5, opacity: 0.85, fontFamily: "'JetBrains Mono', monospace" }}>
+              <span>SILVER · 500</span>
+              <span>GOLD · 1500</span>
+            </div>
+          </div>
         </div>
-      ))}
-    </div>
-  </Screen>
-);
+      </div>
+
+      {/* VOUCHERS */}
+      <div style={{ padding: "20px 20px 0" }}>
+        <div style={{ fontSize: 15, fontWeight: 900, color: C.ink, letterSpacing: -0.2 }}>Vouchers in Barcelona</div>
+        <div style={{ fontSize: 11.5, color: C.slate, marginTop: 1, marginBottom: 12 }}>
+          Real perks at independent local partners — never generic discount codes
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {vouchers.map((v) => {
+            const affordable = credits >= v.cost;
+            const shortfall = v.cost - credits;
+            return (
+              <div
+                key={v.id}
+                style={{
+                  background: affordable ? "#fff" : "#F4F2F8",
+                  border: affordable ? `1px solid ${C.border}` : "1px solid #E0DDE8",
+                  borderRadius: 16, padding: 12,
+                  opacity: affordable ? 1 : 0.65,
+                  position: "relative",
+                  display: "flex", flexDirection: "column",
+                }}
+              >
+                {/* Category icon */}
+                <div style={{
+                  width: 42, height: 42, borderRadius: 12,
+                  background: affordable ? v.bg : "#E8E5F0",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 22, marginBottom: 8,
+                }}>
+                  {v.icon}
+                </div>
+
+                {/* Title */}
+                <div style={{ fontSize: 12, fontWeight: 800, color: C.ink, lineHeight: 1.3, minHeight: 32 }}>
+                  {v.title}
+                </div>
+
+                {/* Hint */}
+                <div style={{ fontSize: 9.5, color: C.slate, lineHeight: 1.35, marginTop: 4, marginBottom: 8 }}>
+                  {v.hint}
+                </div>
+
+                {/* Euro value (prominent) */}
+                <div style={{ fontSize: 24, fontWeight: 900, color: affordable ? v.accent : "#9999AA", lineHeight: 1, letterSpacing: -0.5 }}>
+                  €{v.euros}
+                </div>
+                <div style={{ fontSize: 10, color: C.slate, marginTop: 2, fontWeight: 700, letterSpacing: 0.3 }}>
+                  {v.cost} credits
+                </div>
+
+                {/* Footer: redeem or shortfall */}
+                <div style={{ marginTop: 10 }}>
+                  {affordable ? (
+                    <button style={{
+                      all: "unset", cursor: "pointer",
+                      display: "block", width: "100%", boxSizing: "border-box",
+                      background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+                      color: "#fff", fontSize: 11.5, fontWeight: 800,
+                      padding: "7px 0", borderRadius: 10,
+                      textAlign: "center",
+                    }}>
+                      Redeem
+                    </button>
+                  ) : (
+                    <div style={{
+                      background: "#E8E5F0", color: "#7A7A95",
+                      fontSize: 10, fontWeight: 700,
+                      padding: "6px 8px", borderRadius: 10,
+                      textAlign: "center", lineHeight: 1.3,
+                    }}>
+                      You need {shortfall} more credits
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* HOW CREDITS ARE EARNED */}
+      <div style={{ padding: "22px 20px 0" }}>
+        <div style={{ fontSize: 15, fontWeight: 900, color: C.ink, marginBottom: 2 }}>How you earn credits</div>
+        <div style={{ fontSize: 11.5, color: C.slate, marginBottom: 10 }}>Reviews are the only way — no purchases, ever</div>
+
+        <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 16, padding: 14 }}>
+          {[
+            { Icon: Pencil, label: "Standard text review", credits: 15, desc: "Min. 50 words · location-verified" },
+            { Icon: Camera, label: "Photo review", credits: 30, desc: "Built-in camera only · no gallery uploads" },
+            { Icon: ImageIcon, label: "Full guide post", credits: 80, desc: "5+ photos · highest-value contribution" },
+            { Icon: MapPin, label: "First review of an unlisted venue", credits: 40, desc: "New content bonus" },
+            { Icon: Compass, label: "Hidden Gem submission", credits: 50, desc: "Awarded after 3 GPS-verified users confirm" },
+            { Icon: CheckCircle2, label: "Peer review verification", credits: 10, desc: "GPS-confirmed visit required" },
+            { Icon: Mic, label: "Video review bonus", credits: 15, desc: "Add a short video to any review" },
+            { Icon: Sparkles, label: "Insider tip bonus", credits: 20, desc: "Share something only insiders know" },
+          ].map((row, i, arr) => (
+            <div key={i} style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "8px 0",
+              borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : "none",
+            }}>
+              <div style={{ width: 30, height: 30, borderRadius: 10, background: C.pinkBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <row.Icon size={14} color={C.pink} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: C.ink }}>{row.label}</div>
+                <div style={{ fontSize: 10.5, color: C.slate, marginTop: 1 }}>{row.desc}</div>
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 900, color: C.pink, flexShrink: 0 }}>+{row.credits}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* TIER UPGRADE INFO */}
+      <div style={{ padding: "18px 20px 0" }}>
+        <div style={{
+          background: `linear-gradient(135deg, ${C.cream}, ${C.pinkBg})`,
+          border: `1.5px solid ${C.pinkSoft}`,
+          borderRadius: 16, padding: 14,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <div style={{ width: 22, height: 22, borderRadius: "50%", background: C.lime, border: "1.5px solid #1A7A3E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: "#1A7A3E", flexShrink: 0 }}>◆</div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: C.ink }}>Why reach Gold Local</div>
+          </div>
+          <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.55 }}>
+            <div style={{ display: "flex", gap: 6, marginBottom: 3 }}>
+              <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+              <span><b style={{ color: C.ink }}>€1 per 20 credits</b> instead of €1 per 25</span>
+            </div>
+            <div style={{ display: "flex", gap: 6, marginBottom: 3 }}>
+              <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+              <span><b style={{ color: C.ink }}>Early access</b> to new hidden-gem drops</span>
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+              <span><b style={{ color: C.ink }}>◆ Gold badge</b> on your profile and reviews</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Local ecosystem note */}
+      <div style={{ padding: "16px 20px 0" }}>
+        <div style={{
+          background: "#fff",
+          border: `1.5px solid ${C.border}`,
+          borderRadius: 14, padding: 12,
+        }}>
+          <div style={{ fontSize: 10.5, fontWeight: 800, color: "#1A7A3E", letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
+            ✦ POWERED BY LOCAL PARTNERS
+          </div>
+          <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.55 }}>
+            We work directly with independent cafés, restaurants, hotels, and activity hosts in each city. They get visibility through your honest reviews — not aggressive ads — and you get real perks in return.
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: 24 }} />
+    </Screen>
+  );
+};
 
 // ---------- PROFILE ----------
-const ProfileScreen = ({ go }) => (
+const ProfileScreen = ({ go, userMode = "returning" }) => {
+  const isNew = userMode === "new";
+  const userName = isNew ? "New traveler" : "Vy Ngo";
+  const userInitial = isNew ? "N" : "V";
+  const userLocation = isNew ? "Set your home city" : "Amsterdam · 12 trips · 38 reviews";
+  const stats = isNew
+    ? [{ v: "0", l: "Credits" }, { v: "0", l: "Cities" }, { v: "0", l: "Badges" }]
+    : [{ v: "1200", l: "Credits" }, { v: "7", l: "Cities" }, { v: "23", l: "Badges" }];
+
+  return (
   <Screen bg={C.cream}>
     <StatusBar />
     <div style={{ padding: "12px 20px 0", textAlign: "center" }}>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
         <div style={{ width: 88, height: 88, borderRadius: "50%", background: `linear-gradient(135deg, ${C.pink}, ${C.lavender})`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 32, fontWeight: 900 }}>
-          V
+          {userInitial}
         </div>
       </div>
-      <div style={{ fontSize: 19, fontWeight: 800, color: C.ink }}>Vy Ngo</div>
-      <div style={{ fontSize: 12, color: C.slate, marginTop: 2 }}>Amsterdam · 12 trips · 38 reviews</div>
-      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 8 }}>
-        <div style={{ background: C.lime, color: "#1A7A3E", fontSize: 10, fontWeight: 800, padding: "4px 8px", borderRadius: 20, border: "1px solid #1A7A3E" }}>✓ LOCAL VERIFIED</div>
-        <div style={{ background: C.pink, color: "#fff", fontSize: 10, fontWeight: 800, padding: "4px 8px", borderRadius: 20 }}>◆ GOLD</div>
+      <div style={{ fontSize: 19, fontWeight: 800, color: C.ink }}>{userName}</div>
+      <div style={{ fontSize: 12, color: C.slate, marginTop: 2 }}>{userLocation}</div>
+      {isNew ? (
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 8 }}>
+          <div style={{ background: "#FFF3E5", color: "#8B5E3C", fontSize: 10, fontWeight: 800, padding: "4px 8px", borderRadius: 20, border: "1px solid #C99263" }}>◆ BRONZE</div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 8 }}>
+          <div style={{ background: C.lime, color: "#1A7A3E", fontSize: 10, fontWeight: 800, padding: "4px 8px", borderRadius: 20, border: "1px solid #1A7A3E" }}>✓ LOCAL VERIFIED</div>
+          <div style={{ background: `linear-gradient(135deg, #D9D9E8, #ABABC4)`, color: "#fff", fontSize: 10, fontWeight: 800, padding: "4px 8px", borderRadius: 20 }}>◆ SILVER LOCAL</div>
+        </div>
+      )}
+      <div style={{ fontSize: 10.5, color: C.slate, marginTop: 5, fontStyle: "italic" }}>
+        {isNew ? "Write your first review to start earning" : "Earned through 38 verified reviews"}
       </div>
     </div>
 
+    {/* "Get started" empty-state card — only for new users */}
+    {isNew && (
+      <div style={{ padding: "14px 20px 0" }}>
+        <div style={{
+          background: `linear-gradient(135deg, ${C.pinkBg}, #fff)`,
+          border: `1.5px solid ${C.pinkSoft}`,
+          borderRadius: 16, padding: 14,
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 900, color: C.ink, marginBottom: 4 }}>
+            ✦ Get started
+          </div>
+          <div style={{ fontSize: 11.5, color: C.slate, lineHeight: 1.5, marginBottom: 10 }}>
+            Complete your first photo review to earn 30 credits and start working toward your first voucher
+          </div>
+          <button
+            onClick={() => go("review")}
+            style={{
+              all: "unset", cursor: "pointer",
+              display: "inline-flex", alignItems: "center", gap: 5,
+              background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+              color: "#fff", fontSize: 12, fontWeight: 800,
+              padding: "8px 14px", borderRadius: 20,
+            }}
+          >
+            Write your first review <ArrowRight size={12} color="#fff" />
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* Premium upgrade card — only visible to free-tier new users */}
+    {isNew && (
+      <div style={{ padding: "10px 20px 0" }}>
+        <button
+          style={{
+            all: "unset", cursor: "pointer",
+            display: "block", width: "100%", boxSizing: "border-box",
+            background: `linear-gradient(135deg, ${C.pink} 0%, ${C.indigo} 100%)`,
+            borderRadius: 16, padding: 14,
+            boxShadow: "0 6px 16px rgba(238,58,138,0.22)",
+            position: "relative", overflow: "hidden",
+          }}
+        >
+          <div style={{ position: "absolute", top: 10, right: 14, opacity: 0.4 }}>
+            <Sparkles size={18} color="#fff" fill="#fff" />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#fff" }}>
+            <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Sparkles size={18} color="#fff" fill="#fff" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace", opacity: 0.95 }}>
+                ✦ TRY PREMIUM
+              </div>
+              <div style={{ fontSize: 13.5, fontWeight: 900, marginTop: 1 }}>
+                Free for 7 days
+              </div>
+              <div style={{ fontSize: 10.5, opacity: 0.92, marginTop: 1 }}>
+                Unlimited Bonnie · Live translation · Extra credits
+              </div>
+            </div>
+            <ArrowRight size={16} color="#fff" />
+          </div>
+        </button>
+      </div>
+    )}
+
     {/* stats */}
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "16px 20px 6px" }}>
-      {[
-        { v: "850", l: "Credits" },
-        { v: "7", l: "Cities" },
-        { v: "23", l: "Badges" },
-      ].map((s, i) => (
+      {stats.map((s, i) => (
         <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: "12px 8px", textAlign: "center" }}>
           <div style={{ fontSize: 22, fontWeight: 900, color: C.pink }}>{s.v}</div>
           <div style={{ fontSize: 10.5, color: C.slate, fontWeight: 700, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace" }}>{s.l.toUpperCase()}</div>
@@ -1503,7 +3769,8 @@ const ProfileScreen = ({ go }) => (
       ))}
     </div>
 
-    {/* trip history preview */}
+    {/* trip history preview — hidden for new users (no trips yet) */}
+    {!isNew && (
     <div style={{ padding: "10px 20px 4px" }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: C.slate, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
         TRIP HISTORY
@@ -1523,12 +3790,17 @@ const ProfileScreen = ({ go }) => (
         </div>
       ))}
     </div>
+    )}
 
     {/* settings rows */}
     <div style={{ padding: "6px 20px 4px" }}>
       {[
-        { label: "My reviews · 38 posted", Icon: Star, c: C.pink, go: "review" },
-        { label: "Subscription · Premium", Icon: Sparkles, c: C.indigo },
+        { label: isNew ? "Rewards & Vouchers · Earn credits to unlock" : "Rewards & Vouchers · 1,200 credits, Silver Local", Icon: Gift, c: C.pink, go: "rewards" },
+        { label: isNew ? "My reviews · None yet" : "My reviews · 38 posted", Icon: Star, c: C.pink, go: "review" },
+        { label: isNew ? "Wishlist · Start saving places" : "Wishlist · 7 saved places", Icon: Bookmark, c: C.pink },
+        { label: "Travel preferences · Personalize feed", Icon: Settings, c: C.indigo, go: "onboarding" },
+        { label: "Help & FAQ · How BonVoy works", Icon: HelpCircle, c: C.indigo, go: "help" },
+        { label: isNew ? "Subscription · Free plan" : "Subscription · Premium", Icon: Sparkles, c: C.indigo },
         { label: "Language · English / Español", Icon: Languages, c: C.indigo },
       ].map((r, i) => (
         <button
@@ -1557,16 +3829,1356 @@ const ProfileScreen = ({ go }) => (
       ))}
     </div>
   </Screen>
+  );
+};
+
+// ---------- ONBOARDING — personalization questions ----------
+const OnboardingScreen = ({ go, userMode = "new", setUserMode }) => {
+  // 8 steps total (0-7): bonnie intro → plan → location → city → credits → style → pace → summary
+  const [step, setStep] = useState(0);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [selectedTier, setSelectedTier] = useState("yearly"); // free | monthly | yearly — default to yearly to surface the trial offer
+  const [locationGranted, setLocationGranted] = useState(null); // null | true | false
+  const [homeCity, setHomeCity] = useState("");
+  const [styles, setStyles] = useState([]); // multi-select
+  const [pace, setPace] = useState(null);
+
+  const toggleStyle = (s) => {
+    setStyles((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]));
+  };
+
+  const styleOptions = [
+    { k: "adventure", label: "Adventure", emoji: "🌄" },
+    { k: "food", label: "Foodie", emoji: "🍴" },
+    { k: "culture", label: "Culture", emoji: "🏛️" },
+    { k: "relax", label: "Relaxer", emoji: "🌴" },
+    { k: "budget", label: "Budget", emoji: "💸" },
+    { k: "nightlife", label: "Nightlife", emoji: "🍷" },
+  ];
+  const paceOptions = [
+    { k: "slow", label: "Slow & immersive", desc: "Few spots, deep dive" },
+    { k: "balanced", label: "Balanced", desc: "A bit of everything" },
+    { k: "packed", label: "Pack it all in", desc: "See as much as I can" },
+  ];
+
+  // Step gating
+  const canAdvance =
+    (step === 0) ||                              // Bonnie intro — always
+    (step === 1) ||                              // Plan choice — always (defaults to yearly)
+    (step === 2 && locationGranted !== null) ||  // Location decision made
+    (step === 3 && homeCity.trim().length > 1) || // City entered
+    (step === 4) ||                              // Credit info — always
+    (step === 5 && styles.length > 0) ||
+    (step === 6 && pace !== null) ||
+    step === 7;
+
+  const TOTAL_STEPS = 8;
+  const isLast = step === TOTAL_STEPS - 1;
+
+  return (
+    <Screen bg={C.cream}>
+      <StatusBar />
+
+      {/* Header */}
+      <div style={{ padding: "10px 20px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <button
+          onClick={() => (step === 0 ? go(userMode === "new" ? "signup" : "profile") : setStep(step - 1))}
+          style={{ all: "unset", cursor: "pointer", color: C.indigo, display: "flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 13 }}
+        >
+          <ChevronLeft size={16} /> {step === 0 ? (userMode === "new" ? "Back" : "Cancel") : "Back"}
+        </button>
+        {!isLast && (
+          <div style={{ color: C.slate, fontSize: 11, fontWeight: 700, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace" }}>
+            STEP {step + 1} / {TOTAL_STEPS - 1}
+          </div>
+        )}
+      </div>
+
+      {/* Progress dots */}
+      {!isLast && (
+        <div style={{ display: "flex", justifyContent: "center", gap: 5, padding: "10px 20px 0", flexWrap: "wrap" }}>
+          {Array.from({ length: TOTAL_STEPS - 1 }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                width: i === step ? 24 : 7, height: 7, borderRadius: 7,
+                background: i <= step ? `linear-gradient(90deg, ${C.pink}, ${C.indigo})` : C.border,
+                transition: "all 0.2s",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ============== STEP 0: BONNIE INTRODUCTION ============== */}
+      {step === 0 && (
+        <div style={{ padding: "20px 20px 0", textAlign: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+            <Bonnie size={100} mood="excited" />
+          </div>
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: C.ink, margin: "0 0 6px", letterSpacing: -0.5 }}>
+            Meet Bonnie 👋
+          </h2>
+          <p style={{ margin: "0 0 16px", fontSize: 13, color: C.slate, lineHeight: 1.45, maxWidth: 290, marginLeft: "auto", marginRight: "auto" }}>
+            Your friendly AI travel companion. Here's what I can help with:
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, textAlign: "left" }}>
+            {[
+              { emoji: "🗺️", title: "Plan trips", desc: "Build itineraries that match your vibe" },
+              { emoji: "🌐", title: "Translate conversations", desc: "Talk to anyone in any language" },
+              { emoji: "✨", title: "Find hidden gems", desc: "Spots locals love, not tourist traps" },
+              { emoji: "🍴", title: "Discover authentic experiences", desc: "Eat, drink & explore like a regular" },
+              { emoji: "💎", title: "Earn credits for honest reviews", desc: "GPS-verified · redeem for real perks" },
+            ].map((b, i) => (
+              <div key={i} style={{
+                background: "#fff",
+                border: `1px solid ${C.border}`,
+                borderRadius: 14, padding: "10px 12px",
+                display: "flex", alignItems: "center", gap: 10,
+              }}>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>{b.emoji}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: C.ink }}>{b.title}</div>
+                  <div style={{ fontSize: 10.5, color: C.slate, marginTop: 1 }}>{b.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ============== STEP 1: PLAN CHOICE (Free vs Premium) ============== */}
+      {step === 1 && (
+        <div style={{ padding: "16px 20px 0" }}>
+          <div style={{ textAlign: "center", marginBottom: 14 }}>
+            <div style={{ color: C.pink, fontSize: 10.5, fontWeight: 800, letterSpacing: 1.2, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
+              ✦ TRY PREMIUM FREE FOR 7 DAYS
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: C.ink, margin: 0, letterSpacing: -0.4 }}>
+              Travel smarter with Premium
+            </h2>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: C.slate, lineHeight: 1.45 }}>
+              Unlimited Bonnie · Live AI translation · Extra credits
+            </p>
+          </div>
+
+          {/* PREMIUM TIER CARD — visually prominent, comes first */}
+          <div
+            style={{
+              background: selectedTier !== "free"
+                ? `linear-gradient(135deg, ${C.pinkBg}, ${C.lavender}44)`
+                : `linear-gradient(135deg, ${C.pinkBg}66, #fff)`,
+              border: selectedTier !== "free" ? `2px solid ${C.pink}` : `1.5px solid ${C.pinkSoft}`,
+              borderRadius: 16, padding: 14,
+              boxShadow: selectedTier !== "free" ? "0 6px 18px rgba(238,58,138,0.2)" : "none",
+              transition: "all 0.15s",
+              position: "relative",
+            }}
+          >
+            {/* Most popular badge */}
+            <div style={{
+              position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)",
+              background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+              color: "#fff", fontSize: 9.5, fontWeight: 900, letterSpacing: 0.5,
+              padding: "3px 10px", borderRadius: 10,
+              boxShadow: "0 3px 8px rgba(238,58,138,0.3)",
+            }}>
+              ✦ MOST POPULAR
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6, marginBottom: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <Sparkles size={14} color={C.pink} fill={C.pink} />
+                <div style={{ fontSize: 15, fontWeight: 900, color: C.ink, letterSpacing: -0.2 }}>Premium</div>
+              </div>
+              <div style={{ background: C.lime, color: "#1A7A3E", border: "1px solid #1A7A3E", fontSize: 9, fontWeight: 900, letterSpacing: 0.3, padding: "2px 7px", borderRadius: 10 }}>
+                7-DAY FREE TRIAL
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.5, marginBottom: 10 }}>
+              Try everything free for 7 days · Cancel anytime
+            </div>
+
+            {/* Premium features */}
+            <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.55, marginBottom: 12 }}>
+              {[
+                "Unlimited AI chat with Bonnie",
+                "Live AI translation (voice + text)",
+                "Advanced personalization",
+                "Real-time local travel assistance",
+                "Enhanced travel tools",
+                "Extra credits per review — redeem faster",
+              ].map((line, i) => (
+                <div key={i} style={{ display: "flex", gap: 6, marginBottom: 2 }}>
+                  <span style={{ color: C.pink, fontWeight: 900, flexShrink: 0 }}>✦</span>
+                  <span>{line}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Plan selector — monthly / yearly */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <button
+                onClick={() => setSelectedTier("yearly")}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "10px 12px", borderRadius: 12,
+                  background: selectedTier === "yearly" ? "#fff" : "rgba(255,255,255,0.6)",
+                  border: selectedTier === "yearly" ? `2px solid ${C.pink}` : `1px solid ${C.border}`,
+                }}
+              >
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 900, color: C.ink }}>Yearly</div>
+                    <div style={{ background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`, color: "#fff", fontSize: 8.5, fontWeight: 900, letterSpacing: 0.3, padding: "1px 6px", borderRadius: 8 }}>
+                      BEST VALUE · SAVE €33
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 10, color: C.slate, marginTop: 1 }}>€4.17/mo · billed yearly after trial</div>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 900, color: C.ink, textAlign: "right" }}>
+                  <div>€49.99</div>
+                  <div style={{ fontSize: 9, color: C.slate, fontWeight: 700, marginTop: -2 }}>/year</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setSelectedTier("monthly")}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "10px 12px", borderRadius: 12,
+                  background: selectedTier === "monthly" ? "#fff" : "rgba(255,255,255,0.6)",
+                  border: selectedTier === "monthly" ? `2px solid ${C.pink}` : `1px solid ${C.border}`,
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 12.5, fontWeight: 900, color: C.ink }}>Monthly</div>
+                  <div style={{ fontSize: 10, color: C.slate, marginTop: 1 }}>Pay as you go · cancel anytime</div>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 900, color: C.ink, textAlign: "right" }}>
+                  <div>€6.99</div>
+                  <div style={{ fontSize: 9, color: C.slate, fontWeight: 700, marginTop: -2 }}>/month</div>
+                </div>
+              </button>
+            </div>
+
+            <div style={{ fontSize: 9.5, color: C.slate, marginTop: 10, lineHeight: 1.4, textAlign: "center" }}>
+              You won't be charged until your 7-day trial ends. We'll remind you 2 days before.
+            </div>
+          </div>
+
+          {/* FREE TIER — secondary option, still genuinely valuable */}
+          <button
+            onClick={() => setSelectedTier("free")}
+            style={{
+              all: "unset", cursor: "pointer",
+              display: "block", width: "100%", boxSizing: "border-box",
+              background: "#fff",
+              border: selectedTier === "free" ? `2px solid ${C.indigo}` : `1px solid ${C.border}`,
+              borderRadius: 14, padding: "12px 14px",
+              marginTop: 12,
+              transition: "all 0.15s",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: C.ink }}>Continue with Free</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: C.slate }}>€0/mo</div>
+            </div>
+            <div style={{ fontSize: 10.5, color: C.slate, lineHeight: 1.45 }}>
+              Itinerary planning, GPS-verified reviews, limited AI questions, and the full credit system. You can upgrade anytime.
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* ============== STEP 2: LOCATION PERMISSION ============== */}
+      {step === 2 && (
+        <div style={{ padding: "20px 20px 0", textAlign: "center" }}>
+          {/* Animated location icon with rings */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14, position: "relative" }}>
+            <div style={{ position: "relative", width: 96, height: 96, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: `2px solid ${C.pinkSoft}`, opacity: 0.7, animation: "pulse 2s ease-in-out infinite" }} />
+              <div style={{ position: "absolute", inset: 12, borderRadius: "50%", border: `2px solid ${C.pink}`, opacity: 0.5, animation: "pulse 2s ease-in-out infinite 0.4s" }} />
+              <div style={{
+                width: 60, height: 60, borderRadius: "50%",
+                background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 8px 20px rgba(238,58,138,0.3)",
+              }}>
+                <MapPin size={28} color="#fff" fill="#fff" />
+              </div>
+            </div>
+          </div>
+
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: C.ink, margin: "0 0 4px", letterSpacing: -0.4 }}>
+            Can I know where you are?
+          </h2>
+          <p style={{ margin: "0 0 14px", fontSize: 12, color: C.slate, lineHeight: 1.45, maxWidth: 280, marginLeft: "auto", marginRight: "auto" }}>
+            Location powers the features that make BonVoy useful
+          </p>
+
+          {/* Why it matters */}
+          <div style={{
+            background: `linear-gradient(135deg, ${C.pinkBg}, #fff)`,
+            border: `1.5px solid ${C.pinkSoft}`,
+            borderRadius: 14, padding: 12,
+            textAlign: "left", marginBottom: 10,
+          }}>
+            <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.55 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+                <span><b style={{ color: C.ink }}>Hidden gems</b> appear based on where you actually are</span>
+              </div>
+              <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+                <span>Reviews become <b style={{ color: C.ink }}>GPS-verified</b>, preventing fakes</span>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+                <span>Verified reviews <b style={{ color: C.ink }}>earn credits</b> you can redeem</span>
+              </div>
+            </div>
+          </div>
+
+          {/* What if you say no */}
+          <div style={{
+            background: "#fff",
+            border: `1px dashed ${C.border}`,
+            borderRadius: 12, padding: 10,
+            textAlign: "left", marginBottom: 12,
+          }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: C.slate, letterSpacing: 0.4, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
+              IF YOU SAY NO
+            </div>
+            <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.5 }}>
+              You can still browse trips, plan itineraries, and use Bonnie — but verified reviews, Local Mode, and the credit system will be limited.
+            </div>
+          </div>
+
+          {/* Permission buttons */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <button
+              onClick={() => setLocationGranted(true)}
+              style={{
+                all: "unset", cursor: "pointer",
+                display: "block", width: "100%", boxSizing: "border-box",
+                padding: "12px 0", textAlign: "center",
+                background: locationGranted === true
+                  ? `linear-gradient(135deg, ${C.pink}, ${C.indigo})`
+                  : "#fff",
+                color: locationGranted === true ? "#fff" : C.ink,
+                border: locationGranted === true ? "none" : `1.5px solid ${C.pink}`,
+                fontSize: 13, fontWeight: 800,
+                borderRadius: 14,
+                boxShadow: locationGranted === true ? "0 4px 14px rgba(238,58,138,0.22)" : "none",
+              }}
+            >
+              {locationGranted === true ? "✓ Allow Location" : "Allow Location"}
+            </button>
+            <button
+              onClick={() => setLocationGranted(false)}
+              style={{
+                all: "unset", cursor: "pointer",
+                display: "block", width: "100%", boxSizing: "border-box",
+                padding: "12px 0", textAlign: "center",
+                background: locationGranted === false ? "#F4F2FB" : "#fff",
+                color: C.slate,
+                border: `1px solid ${C.border}`,
+                fontSize: 13, fontWeight: 800,
+                borderRadius: 14,
+              }}
+            >
+              {locationGranted === false ? "✓ Not Now" : "Not Now"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============== STEP 3: HOME CITY ============== */}
+      {step === 3 && (
+        <div style={{ padding: "20px 20px 0" }}>
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: 18,
+                background: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 6px 16px rgba(59,46,229,0.22)",
+              }}>
+                <span style={{ fontSize: 32 }}>🏠</span>
+              </div>
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: C.ink, margin: "0 0 4px", letterSpacing: -0.4 }}>
+              Which city do you call home?
+            </h2>
+            <p style={{ margin: 0, fontSize: 12, color: C.slate, lineHeight: 1.45, maxWidth: 280, marginLeft: "auto", marginRight: "auto" }}>
+              This sets your <b style={{ color: C.indigo }}>Local Mode</b> baseline — Bonnie will know when to treat you like a local vs. a traveler
+            </p>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
+              HOME CITY
+            </div>
+            <input
+              value={homeCity}
+              onChange={(e) => setHomeCity(e.target.value)}
+              placeholder="e.g. Amsterdam"
+              style={{
+                width: "100%", boxSizing: "border-box",
+                border: `1.5px solid ${C.border}`, borderRadius: 14,
+                padding: "12px 14px",
+                fontSize: 14, fontFamily: "system-ui", outline: "none",
+                background: "#fff", color: C.ink,
+                fontWeight: 700,
+              }}
+            />
+            <div style={{ fontSize: 10.5, color: C.slate, marginTop: 6, lineHeight: 1.4 }}>
+              You can change this anytime in Profile → Travel preferences
+            </div>
+          </div>
+
+          {/* Popular suggestions */}
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: C.slate, letterSpacing: 0.4, fontFamily: "'JetBrains Mono', monospace", marginBottom: 6 }}>
+              POPULAR
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {["Amsterdam", "Barcelona", "Lisbon", "Berlin", "Paris", "London"].map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setHomeCity(c)}
+                  style={{
+                    all: "unset", cursor: "pointer",
+                    background: homeCity === c ? C.pink : "#fff",
+                    color: homeCity === c ? "#fff" : C.ink,
+                    border: homeCity === c ? "none" : `1px solid ${C.border}`,
+                    fontSize: 12, fontWeight: 700,
+                    padding: "6px 12px", borderRadius: 20,
+                  }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============== STEP 4: CREDIT SYSTEM INTRO ============== */}
+      {step === 4 && (
+        <div style={{ padding: "16px 20px 0" }}>
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: C.ink, margin: "0 0 4px", letterSpacing: -0.4 }}>
+              How rewards work
+            </h2>
+            <p style={{ margin: 0, fontSize: 12, color: C.slate, lineHeight: 1.45, maxWidth: 290, marginLeft: "auto", marginRight: "auto" }}>
+              A simple loop that rewards real contributions
+            </p>
+          </div>
+
+          {/* Animated credit loop */}
+          <div style={{ position: "relative", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4 }}>
+              {[
+                { Icon: Camera, label: "Review", desc: "Snap a photo", bg: C.pinkBg, color: C.pink, delay: "0s" },
+                { Icon: Sparkles, label: "Earn", desc: "Get credits", bg: "#FFF9E5", color: "#B89A2F", delay: "0.6s" },
+                { Icon: Star, label: "Redeem", desc: "Real perks", bg: "#E8F5E8", color: "#1A7A3E", delay: "1.2s" },
+              ].map((c, i) => (
+                <React.Fragment key={i}>
+                  <div style={{
+                    flex: 1, background: "#fff",
+                    border: `1.5px solid ${C.border}`,
+                    borderRadius: 16, padding: "12px 8px",
+                    textAlign: "center",
+                    animation: `pulse 1.8s ease-in-out ${c.delay} infinite`,
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 12,
+                      background: c.bg,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      margin: "0 auto 6px",
+                    }}>
+                      <c.Icon size={18} color={c.color} />
+                    </div>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: C.ink }}>{c.label}</div>
+                    <div style={{ fontSize: 9.5, color: C.slate, marginTop: 1 }}>{c.desc}</div>
+                  </div>
+                  {i < 2 && (
+                    <div style={{ flexShrink: 0, color: C.pink, fontSize: 18, fontWeight: 900 }}>→</div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
+          {/* Local / Travel mode callout */}
+          <div style={{
+            background: `linear-gradient(135deg, ${C.pinkBg}, #fff)`,
+            border: `1.5px solid ${C.pinkSoft}`,
+            borderRadius: 16, padding: 14,
+          }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: C.pink, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
+              ✦ AUTOMATIC MODE
+            </div>
+            <div style={{ fontSize: 12, color: C.ink, fontWeight: 700, marginBottom: 6 }}>
+              Bonnie detects whether you're in:
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ flex: 1, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "8px 10px" }}>
+                <div style={{ fontSize: 11.5, fontWeight: 900, color: C.indigo, display: "flex", alignItems: "center", gap: 4 }}>
+                  📍 Local Mode
+                </div>
+                <div style={{ fontSize: 10, color: C.slate, marginTop: 2, lineHeight: 1.4 }}>You're home — share insider tips</div>
+              </div>
+              <div style={{ flex: 1, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "8px 10px" }}>
+                <div style={{ fontSize: 11.5, fontWeight: 900, color: C.pink, display: "flex", alignItems: "center", gap: 4 }}>
+                  ✈️ Travel Mode
+                </div>
+                <div style={{ fontSize: 10, color: C.slate, marginTop: 2, lineHeight: 1.4 }}>Away — discover & explore</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 10.5, color: C.slate, marginTop: 8, lineHeight: 1.4, fontStyle: "italic" }}>
+              Based on your current location vs. home city — no toggle needed
+            </div>
+          </div>
+
+          {/* LOCAL PARTNERS ECOSYSTEM CALLOUT */}
+          <div style={{
+            background: "#fff",
+            border: `1.5px solid ${C.border}`,
+            borderRadius: 16, padding: 14,
+            marginTop: 10,
+          }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: "#1A7A3E", letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 6 }}>
+              ✦ POWERED BY LOCAL PARTNERS
+            </div>
+            <div style={{ fontSize: 12, color: C.ink, fontWeight: 700, lineHeight: 1.4, marginBottom: 8 }}>
+              Your credits unlock perks at real places
+            </div>
+            <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+              {[
+                { emoji: "☕", label: "Cafés" },
+                { emoji: "🍴", label: "Restaurants" },
+                { emoji: "🏨", label: "Hotels" },
+                { emoji: "🧭", label: "Activities" },
+              ].map((p, i) => (
+                <div key={i} style={{
+                  flex: 1, textAlign: "center",
+                  background: "#F8F6FD", border: `1px solid ${C.border}`,
+                  borderRadius: 10, padding: "6px 2px",
+                }}>
+                  <div style={{ fontSize: 18 }}>{p.emoji}</div>
+                  <div style={{ fontSize: 9, color: C.slate, fontWeight: 700, marginTop: 1 }}>{p.label}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 10.5, color: C.slate, lineHeight: 1.55 }}>
+              We partner with independent local businesses in each city. They get visibility through authentic reviews — not aggressive ads. Your credits = real value, both for you and the community.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============== STEP 5: TRAVEL STYLE ============== */}
+      {step === 5 && (
+        <div style={{ padding: "16px 20px 0" }}>
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: C.ink, margin: 0, letterSpacing: -0.5 }}>What's your travel style?</h2>
+          <p style={{ margin: "4px 0 16px", fontSize: 12.5, color: C.slate, lineHeight: 1.4 }}>
+            Pick all that fit · Bonnie will use this to recommend places you'll love
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {styleOptions.map((s) => {
+              const active = styles.includes(s.k);
+              return (
+                <button
+                  key={s.k}
+                  onClick={() => toggleStyle(s.k)}
+                  style={{
+                    all: "unset", cursor: "pointer",
+                    padding: "14px 12px", borderRadius: 14,
+                    background: active ? `linear-gradient(135deg, ${C.pinkBg}, ${C.pinkSoft})` : "#fff",
+                    border: active ? `2px solid ${C.pink}` : `1px solid ${C.border}`,
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                    boxShadow: active ? "0 4px 12px rgba(238,58,138,0.18)" : "none",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  <div style={{ fontSize: 26 }}>{s.emoji}</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: C.ink }}>{s.label}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ============== STEP 6: PACE ============== */}
+      {step === 6 && (
+        <div style={{ padding: "16px 20px 0" }}>
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: C.ink, margin: 0, letterSpacing: -0.5 }}>What's your travel pace?</h2>
+          <p style={{ margin: "4px 0 16px", fontSize: 12.5, color: C.slate, lineHeight: 1.4 }}>
+            Bonnie will pace your itineraries accordingly
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {paceOptions.map((p) => {
+              const active = pace === p.k;
+              return (
+                <button
+                  key={p.k}
+                  onClick={() => setPace(p.k)}
+                  style={{
+                    all: "unset", cursor: "pointer",
+                    padding: 14, borderRadius: 14,
+                    background: active ? `linear-gradient(135deg, ${C.pinkBg}, ${C.pinkSoft})` : "#fff",
+                    border: active ? `2px solid ${C.pink}` : `1px solid ${C.border}`,
+                    boxShadow: active ? "0 4px 12px rgba(238,58,138,0.18)" : "none",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  <div style={{ fontSize: 14, fontWeight: 800, color: C.ink }}>{p.label}</div>
+                  <div style={{ fontSize: 11.5, color: C.slate, marginTop: 2 }}>{p.desc}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ============== STEP 7: SUMMARY ============== */}
+      {step === 7 && (
+        <div style={{ padding: "18px 20px 0", textAlign: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+            <Bonnie size={80} mood="excited" />
+          </div>
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: C.ink, margin: 0, letterSpacing: -0.5 }}>
+            You're all set! ✈️
+          </h2>
+          <p style={{ margin: "4px 0 16px", fontSize: 12.5, color: C.slate, lineHeight: 1.4 }}>
+            Here's what Bonnie will use to personalize your feed
+          </p>
+
+          {/* Summary card */}
+          <div style={{
+            background: `linear-gradient(135deg, ${C.pinkBg}, #fff)`,
+            border: `1.5px solid ${C.pinkSoft}`,
+            borderRadius: 16, padding: 14,
+            textAlign: "left",
+          }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: C.pink, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
+              ✦ YOUR TRAVEL PROFILE
+            </div>
+            <div style={{ fontSize: 12, color: C.slate, lineHeight: 1.65 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+                <span><b style={{ color: C.ink }}>Style:</b> {styles.length > 0 ? styles.map((s) => styleOptions.find((o) => o.k === s)?.label).join(", ") : "Not set"}</span>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <span style={{ color: C.pink, fontWeight: 900 }}>✦</span>
+                <span><b style={{ color: C.ink }}>Pace:</b> {pace ? paceOptions.find((o) => o.k === pace)?.label : "Not set"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mode label */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            background: "#fff", border: `2px solid ${C.indigo}`,
+            borderRadius: 14, padding: "10px 12px", marginTop: 10,
+          }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: `linear-gradient(135deg, ${C.lavender}, ${C.indigo})`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <MapPin size={16} color="#fff" fill="#fff" />
+            </div>
+            <div style={{ flex: 1, textAlign: "left" }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, color: C.indigo, letterSpacing: 0.4, fontFamily: "'JetBrains Mono', monospace" }}>
+                STARTING IN
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 900, color: C.ink, marginTop: 1 }}>
+                📍 Local Mode — {homeCity || "Your city"}
+              </div>
+            </div>
+          </div>
+
+          {/* Plan label */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            background: "#fff",
+            border: selectedTier === "free" ? `1.5px solid ${C.border}` : `2px solid ${C.pink}`,
+            borderRadius: 14, padding: "10px 12px", marginTop: 10,
+          }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: selectedTier === "free"
+                ? "#F8F6FD"
+                : `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              {selectedTier === "free"
+                ? <span style={{ fontSize: 16 }}>🆓</span>
+                : <Sparkles size={15} color="#fff" fill="#fff" />}
+            </div>
+            <div style={{ flex: 1, textAlign: "left" }}>
+              <div style={{
+                fontSize: 10.5, fontWeight: 800,
+                color: selectedTier === "free" ? C.slate : C.pink,
+                letterSpacing: 0.4, fontFamily: "'JetBrains Mono', monospace",
+              }}>
+                YOUR PLAN
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 900, color: C.ink, marginTop: 1 }}>
+                {selectedTier === "free" && "Free · €0/mo"}
+                {selectedTier === "monthly" && "✦ Premium · 7-day trial, then €6.99/mo"}
+                {selectedTier === "yearly" && "✦ Premium Yearly · 7-day trial, then €49.99/yr"}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 12, marginTop: 10, textAlign: "left" }}>
+            <div style={{ fontSize: 11.5, color: C.slate, lineHeight: 1.55 }}>
+              You can update preferences{selectedTier === "free" ? " or upgrade to Premium" : " or change your plan"} anytime in <b style={{ color: C.ink }}>Profile</b>. Bonnie learns as you go — the more you use BonVoy, the smarter it gets.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer CTA */}
+      <div style={{ padding: "18px 20px 0" }}>
+        <button
+          disabled={!canAdvance}
+          onClick={() => {
+            if (isLast) {
+              // For new users, show a completion modal that points them to the Returning User view.
+              // For returning users (re-running onboarding from Profile), just go home.
+              if (userMode === "new" && setUserMode) {
+                setShowCompletionModal(true);
+              } else {
+                go("home");
+              }
+              return;
+            }
+            setStep(step + 1);
+          }}
+          style={{
+            all: "unset", cursor: canAdvance ? "pointer" : "not-allowed",
+            display: "block", width: "100%", boxSizing: "border-box",
+            padding: "14px 0", textAlign: "center",
+            background: canAdvance ? `linear-gradient(135deg, ${C.pink}, ${C.indigo})` : "#D8D4E8",
+            color: "#fff", fontSize: 14, fontWeight: 800,
+            borderRadius: 18,
+            boxShadow: canAdvance ? "0 6px 20px rgba(238,58,138,0.22)" : "none",
+            opacity: canAdvance ? 1 : 0.7,
+          }}
+        >
+          {isLast ? "Start Exploring" : "Continue"}
+        </button>
+        {!canAdvance && (
+          <div style={{ textAlign: "center", fontSize: 11, color: C.slate, marginTop: 6 }}>
+            {step === 2 && "Choose an option to continue"}
+            {step === 3 && "Enter your home city to continue"}
+            {step === 5 && "Pick at least one style"}
+            {step === 6 && "Pick a pace"}
+          </div>
+        )}
+      </div>
+
+      {/* ============== COMPLETION MODAL (new-user only) ============== */}
+      {showCompletionModal && (
+        <>
+          {/* Inline keyframes for the modal animation */}
+          <style>{`
+            @keyframes bvBackdropIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes bvModalIn {
+              0% { opacity: 0; transform: translateY(28px) scale(0.96); }
+              60% { opacity: 1; }
+              100% { opacity: 1; transform: translateY(0) scale(1); }
+            }
+            @keyframes bvBonnieBob {
+              0%, 100% { transform: translateY(0) rotate(-3deg); }
+              50% { transform: translateY(-4px) rotate(3deg); }
+            }
+          `}</style>
+
+          {/* Backdrop */}
+          <div
+            onClick={() => { setShowCompletionModal(false); go("home"); }}
+            style={{
+              position: "absolute", inset: 0,
+              background: "rgba(15,11,38,0.55)",
+              backdropFilter: "blur(2px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 20,
+              animation: "bvBackdropIn 0.25s ease-out",
+              zIndex: 100,
+            }}
+          >
+            {/* Modal card */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "100%", maxWidth: 320,
+                background: "#fff",
+                borderRadius: 22,
+                padding: "20px 18px 18px",
+                position: "relative",
+                boxShadow: "0 20px 60px rgba(15,11,38,0.35)",
+                animation: "bvModalIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both",
+              }}
+            >
+              {/* Close X */}
+              <button
+                onClick={() => { setShowCompletionModal(false); go("home"); }}
+                aria-label="Close"
+                style={{
+                  all: "unset", cursor: "pointer",
+                  position: "absolute", top: 12, right: 12,
+                  width: 26, height: 26, borderRadius: "50%",
+                  background: "#F4F2FB",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}
+              >
+                <X size={14} color={C.slate} />
+              </button>
+
+              {/* Bonnie bobbing */}
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                <div style={{ animation: "bvBonnieBob 2.2s ease-in-out infinite", transformOrigin: "center bottom" }}>
+                  <Bonnie size={84} mood="excited" />
+                </div>
+              </div>
+
+              {/* Success label */}
+              <div style={{ textAlign: "center" }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  background: C.lime, color: "#1A7A3E",
+                  border: "1px solid #1A7A3E",
+                  fontSize: 9.5, fontWeight: 900, letterSpacing: 0.5,
+                  padding: "3px 9px", borderRadius: 10,
+                  marginBottom: 8,
+                }}>
+                  <CheckCircle2 size={11} color="#1A7A3E" /> ACCOUNT CREATED
+                </div>
+                <h2 style={{ fontSize: 22, fontWeight: 900, color: C.ink, margin: "0 0 6px", letterSpacing: -0.4 }}>
+                  Welcome to BonVoy! 🎉
+                </h2>
+                <p style={{ margin: "0 0 14px", fontSize: 12, color: C.slate, lineHeight: 1.5 }}>
+                  You've seen how a brand-new user gets set up. To see what BonVoy feels like after weeks of trips, reviews & credits — switch to the <b style={{ color: C.indigo }}>Returning User</b> view.
+                </p>
+              </div>
+
+              {/* Primary CTA — switch to Returning User */}
+              <button
+                onClick={() => {
+                  setShowCompletionModal(false);
+                  if (setUserMode) setUserMode("returning");
+                }}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  width: "100%", boxSizing: "border-box",
+                  padding: "13px 0",
+                  background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+                  color: "#fff", fontSize: 13.5, fontWeight: 800,
+                  borderRadius: 16,
+                  boxShadow: "0 6px 18px rgba(238,58,138,0.28)",
+                  marginBottom: 8,
+                }}
+              >
+                Continue as Returning User <ArrowRight size={14} color="#fff" />
+              </button>
+
+              {/* Secondary — keep exploring as new */}
+              <button
+                onClick={() => { setShowCompletionModal(false); go("home"); }}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  display: "block", width: "100%", textAlign: "center",
+                  padding: "10px 0",
+                  fontSize: 12, fontWeight: 700,
+                  color: C.slate,
+                }}
+              >
+                Keep exploring as new user
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </Screen>
+  );
+};
+
+// ---------- HELP / FAQ ----------
+const HelpScreen = ({ go }) => {
+  const [openIdx, setOpenIdx] = useState(0);
+  const faqs = [
+    {
+      q: "What is BonVoy?",
+      a: "BonVoy is your friendly travel companion that helps you plan trips, find hidden local gems, translate on the go, and discover places loved by real travelers and locals — not by tourist guidebooks. Bonnie, the AI assistant, can chat with you about anywhere you want to go.",
+    },
+    {
+      q: "How do credits work?",
+      a: "You earn credits by leaving photo or video reviews of places you actually visited (GPS-verified). You can redeem credits for real-world vouchers at local cafés, restaurants, activities, and hotels in your destination city. The exchange rate improves once you reach Gold Local status.",
+    },
+    {
+      q: "What does Gold Local status unlock?",
+      a: "Gold Local is earned, not bought. Once you cross 1,500 credits, you unlock: a better voucher rate (€1 per 20 credits vs €1 per 25), early access to new hidden-gem drops, a Gold badge on your profile and reviews, and featured placement in feed search.",
+    },
+    {
+      q: "How does GPS verification work?",
+      a: "When you write a review, BonVoy confirms your phone is at the place you're reviewing — using your device's location. Photos and videos are timestamped at capture. This means you can only review places you've actually been to. Your location data is only used at the moment of review, never tracked passively.",
+    },
+    {
+      q: "How does BonVoy fight fake reviews?",
+      a: "Four layers: (1) GPS-verified at the location, (2) photo or video required, (3) Hidden Gem submissions only earn credits after three other GPS-verified users confirm the place, and (4) Gold Local status takes hundreds of verified reviews to earn. Together this makes fake-review farming impractical.",
+    },
+    {
+      q: "What happens to my data?",
+      a: "Your location is checked only at the moment of writing a review, never logged passively. Your reviews and photos are public on the platform. Your wishlist, trip plans, and preferences stay private to you. You can delete your account and all associated data anytime in Profile → Settings.",
+    },
+    {
+      q: "What's an Insider tip?",
+      a: "An Insider tip is a short bonus line you can add to any review — something only someone who's actually been there would know, like 'sit at the bar, not the tables' or 'go at sunrise, not sunset'. It earns you +20 bonus credits and is what makes reviews actually useful.",
+    },
+    {
+      q: "Can I use BonVoy offline?",
+      a: "Partially. You can download language packs in the Translator for offline use. Itineraries you've already planned are viewable offline. Live recommendations and the community feed need a connection.",
+    },
+  ];
+
+  return (
+    <Screen bg={C.cream}>
+      <StatusBar />
+      <div style={{ padding: "10px 20px 0" }}>
+        <button
+          onClick={() => go("profile")}
+          style={{ all: "unset", cursor: "pointer", color: C.indigo, display: "flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 13 }}
+        >
+          <ChevronLeft size={16} /> Profile
+        </button>
+      </div>
+
+      <div style={{ padding: "12px 20px 0" }}>
+        <div style={{ color: C.pink, fontSize: 11, fontWeight: 700, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace" }}>
+          <Spark size={11} color={C.pink} /> HELP & LEARN
+        </div>
+        <h1 style={{ fontSize: 24, margin: "4px 0 2px", fontWeight: 900, color: C.ink, letterSpacing: -0.5 }}>
+          How BonVoy works
+        </h1>
+        <p style={{ margin: 0, fontSize: 12.5, color: C.slate, lineHeight: 1.4 }}>
+          Everything you need to know — tap a question to expand
+        </p>
+      </div>
+
+      {/* Quick onboarding entry */}
+      <div style={{ padding: "14px 20px 0" }}>
+        <button
+          onClick={() => go("onboarding")}
+          style={{
+            all: "unset", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 10,
+            width: "100%", boxSizing: "border-box",
+            background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+            color: "#fff", borderRadius: 14, padding: 12,
+            boxShadow: "0 6px 16px rgba(238,58,138,0.22)",
+          }}
+        >
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Sparkles size={15} color="#fff" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 900 }}>Personalize your feed</div>
+            <div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 1 }}>Take the 1-minute travel-style quiz</div>
+          </div>
+          <ArrowRight size={14} color="#fff" />
+        </button>
+      </div>
+
+      {/* FAQ accordion */}
+      <div style={{ padding: "16px 20px 0" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 8 }}>Frequently asked</div>
+        {faqs.map((f, i) => {
+          const open = openIdx === i;
+          return (
+            <div
+              key={i}
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.border}`,
+                borderRadius: 14,
+                marginBottom: 8,
+                overflow: "hidden",
+              }}
+            >
+              <button
+                onClick={() => setOpenIdx(open ? -1 : i)}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 8,
+                  width: "100%", boxSizing: "border-box",
+                  padding: "12px 14px",
+                }}
+              >
+                <HelpCircle size={14} color={C.indigo} style={{ flexShrink: 0 }} />
+                <div style={{ flex: 1, fontSize: 13, fontWeight: 800, color: C.ink, textAlign: "left" }}>{f.q}</div>
+                <ChevronDown size={16} color={C.slate} style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.15s", flexShrink: 0 }} />
+              </button>
+              {open && (
+                <div style={{ padding: "0 14px 12px 38px", fontSize: 12, color: C.slate, lineHeight: 1.55 }}>
+                  {f.a}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Contact card */}
+      <div style={{ padding: "10px 20px 0" }}>
+        <div style={{ background: C.pinkBg, border: `1px dashed ${C.pink}`, borderRadius: 14, padding: 12 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 800, color: C.ink, display: "flex", alignItems: "center", gap: 5 }}>
+            <MessageCircle size={13} color={C.pink} /> Still confused?
+          </div>
+          <div style={{ fontSize: 11, color: C.slate, marginTop: 3, lineHeight: 1.5 }}>
+            Tap the Bonnie tab and ask anything. She'll point you to the right feature, no judgment.
+          </div>
+        </div>
+      </div>
+    </Screen>
+  );
+};
+
+// ---------- WELCOME (landing page for new users) ----------
+const WelcomeScreen = ({ go }) => (
+  <Screen bg={C.cream}>
+    <StatusBar />
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "20px 24px 32px" }}>
+      {/* Hero area */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 12, paddingTop: 20 }}>
+        <Bonnie size={120} mood="excited" />
+        <div style={{ color: C.pink, fontSize: 11, fontWeight: 800, letterSpacing: 1.4, fontFamily: "'JetBrains Mono', monospace" }}>
+          ✦ MEET BONNIE ✦
+        </div>
+        <div style={{ fontSize: 38, fontWeight: 900, color: C.indigo, letterSpacing: -1.2, lineHeight: 1, marginTop: -2 }}>
+          bonvoy<span style={{ color: C.pink }}>!</span>
+        </div>
+        <div style={{ fontSize: 14, color: C.ink, fontWeight: 700, marginTop: 4, lineHeight: 1.35 }}>
+          Travel like a local, anywhere
+        </div>
+        <div style={{ fontSize: 12, color: C.slate, lineHeight: 1.5, maxWidth: 280, marginTop: 2 }}>
+          Hidden gems verified by real locals · AI chat in every language · Earn rewards for genuine reviews
+        </div>
+
+        {/* Core features — 2x2 grid, compact */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 14, width: "100%", maxWidth: 280 }}>
+          {[
+            { Icon: Calendar, label: "Trip Planning", bg: C.pinkBg, accent: C.pink },
+            { Icon: Languages, label: "Translator", bg: "#EBE7FB", accent: C.indigo },
+            { Icon: Compass, label: "Hidden Gems", bg: "#FFF9E5", accent: "#B89A2F" },
+            { Icon: Star, label: "Real Reviews", bg: "#E8F5E8", accent: "#1A7A3E" },
+          ].map((f, i) => (
+            <div
+              key={i}
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.border}`,
+                borderRadius: 12,
+                padding: "8px 10px",
+                display: "flex", alignItems: "center", gap: 8,
+              }}
+            >
+              <div style={{
+                width: 26, height: 26, borderRadius: 8,
+                background: f.bg,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <f.Icon size={13} color={f.accent} />
+              </div>
+              <div style={{ fontSize: 11.5, fontWeight: 800, color: C.ink, letterSpacing: -0.1 }}>{f.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTAs */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <button
+          onClick={() => go("signup")}
+          style={{
+            all: "unset", cursor: "pointer",
+            display: "block", width: "100%", boxSizing: "border-box",
+            padding: "14px 0", textAlign: "center",
+            background: `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+            color: "#fff", fontSize: 14, fontWeight: 800,
+            borderRadius: 18,
+            boxShadow: "0 6px 20px rgba(238,58,138,0.25)",
+          }}
+        >
+          Create account
+        </button>
+        <button
+          style={{
+            all: "unset", cursor: "pointer",
+            display: "block", width: "100%", boxSizing: "border-box",
+            padding: "12px 0", textAlign: "center",
+            background: "#fff", border: `1px solid ${C.border}`,
+            color: C.ink, fontSize: 13, fontWeight: 800,
+            borderRadius: 18,
+          }}
+        >
+          I already have an account
+        </button>
+        <div style={{ textAlign: "center", fontSize: 10.5, color: C.slate, marginTop: 4, lineHeight: 1.4 }}>
+          By continuing you agree to our <span style={{ color: C.indigo, fontWeight: 700 }}>Terms</span> and <span style={{ color: C.indigo, fontWeight: 700 }}>Privacy Policy</span>
+        </div>
+      </div>
+    </div>
+  </Screen>
 );
+
+// ---------- SIGNUP (collect basic info) ----------
+const SignupScreen = ({ go }) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const canSubmit = name.trim().length > 1 && /@/.test(email) && password.length >= 6;
+
+  return (
+    <Screen bg={C.cream}>
+      <StatusBar />
+      <div style={{ padding: "10px 20px 0" }}>
+        <button
+          onClick={() => go("welcome")}
+          style={{ all: "unset", cursor: "pointer", color: C.indigo, display: "flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 13 }}
+        >
+          <ChevronLeft size={16} /> Back
+        </button>
+      </div>
+
+      <div style={{ padding: "16px 20px 0", textAlign: "center" }}>
+        <Bonnie size={64} />
+        <h1 style={{ fontSize: 24, margin: "8px 0 4px", fontWeight: 900, color: C.ink, letterSpacing: -0.5 }}>
+          Let's get you set up
+        </h1>
+        <p style={{ margin: 0, fontSize: 12.5, color: C.slate, lineHeight: 1.4 }}>
+          A few quick details — takes 20 seconds
+        </p>
+      </div>
+
+      <div style={{ padding: "20px 20px 0", display: "flex", flexDirection: "column", gap: 10 }}>
+        {/* Name */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>NAME</div>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="What should we call you?"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              border: `1px solid ${C.border}`, borderRadius: 14, padding: "12px 14px",
+              fontSize: 13, fontFamily: "system-ui", outline: "none",
+              background: "#fff", color: C.ink,
+            }}
+          />
+        </div>
+        {/* Email */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>EMAIL</div>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            type="email"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              border: `1px solid ${C.border}`, borderRadius: 14, padding: "12px 14px",
+              fontSize: 13, fontFamily: "system-ui", outline: "none",
+              background: "#fff", color: C.ink,
+            }}
+          />
+        </div>
+        {/* Password */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>PASSWORD</div>
+          <input
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="At least 6 characters"
+            type="password"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              border: `1px solid ${C.border}`, borderRadius: 14, padding: "12px 14px",
+              fontSize: 13, fontFamily: "system-ui", outline: "none",
+              background: "#fff", color: C.ink,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Divider with "or" */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "18px 20px 6px" }}>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+        <div style={{ fontSize: 10.5, color: C.slate, fontWeight: 700, letterSpacing: 0.5 }}>OR CONTINUE WITH</div>
+        <div style={{ flex: 1, height: 1, background: C.border }} />
+      </div>
+
+      {/* Social buttons */}
+      <div style={{ padding: "0 20px 0", display: "flex", gap: 8 }}>
+        {["Google", "Apple"].map((s) => (
+          <button
+            key={s}
+            style={{
+              all: "unset", cursor: "pointer", flex: 1, textAlign: "center",
+              padding: "10px 0",
+              background: "#fff", border: `1px solid ${C.border}`,
+              borderRadius: 14,
+              fontSize: 12.5, fontWeight: 800, color: C.ink,
+            }}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {/* Submit */}
+      <div style={{ padding: "18px 20px 0" }}>
+        <button
+          disabled={!canSubmit}
+          onClick={() => canSubmit && go("onboarding")}
+          style={{
+            all: "unset", cursor: canSubmit ? "pointer" : "not-allowed",
+            display: "block", width: "100%", boxSizing: "border-box",
+            padding: "14px 0", textAlign: "center",
+            background: canSubmit ? `linear-gradient(135deg, ${C.pink}, ${C.indigo})` : "#D8D4E8",
+            color: "#fff", fontSize: 14, fontWeight: 800,
+            borderRadius: 18,
+            boxShadow: canSubmit ? "0 6px 20px rgba(238,58,138,0.22)" : "none",
+            opacity: canSubmit ? 1 : 0.7,
+          }}
+        >
+          Continue
+        </button>
+        {!canSubmit && (
+          <div style={{ textAlign: "center", fontSize: 11, color: C.slate, marginTop: 6 }}>
+            Fill in all three fields to continue
+          </div>
+        )}
+      </div>
+    </Screen>
+  );
+};
+
+// ---------- CHAT TAB WRAPPER (Bonnie ⇄ Translator sub-tabs) ----------
+const ChatTabWrapper = ({ subTab, go, openTranslator, translatorMode }) => {
+  // Bumping this remounts ChatScreen, resetting its message state to the initial greeting
+  const [chatResetKey, setChatResetKey] = useState(0);
+  const startNewChat = () => setChatResetKey((k) => k + 1);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", background: "#fff" }}>
+      <StatusBar />
+
+      {/* Header: title + (Bonnie only) New chat + History on right */}
+      <div style={{ flexShrink: 0, padding: "8px 16px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ color: C.pink, fontSize: 11, fontWeight: 700, letterSpacing: 0.6, fontFamily: "'JetBrains Mono', monospace" }}>
+          <Spark size={11} color={C.pink} /> {subTab === "bonnie" ? "CHAT" : "TRANSLATE"}
+        </div>
+        {subTab === "bonnie" && (
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              onClick={startNewChat}
+              aria-label="New chat"
+              style={{
+                all: "unset", cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 4,
+                background: "#fff", border: `1px solid ${C.border}`,
+                borderRadius: 16, padding: "5px 10px",
+                color: C.ink,
+              }}
+            >
+              <Plus size={13} color={C.pink} strokeWidth={2.5} />
+              <span style={{ fontSize: 11, fontWeight: 800, color: C.ink }}>New chat</span>
+            </button>
+            <button
+              aria-label="Conversation history"
+              style={{
+                all: "unset", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 30, height: 30, borderRadius: "50%",
+                background: "#fff",
+                border: `1px solid ${C.border}`,
+              }}
+            >
+              <Clock size={14} color={C.slate} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Sub-tab switcher: Bonnie / Translator */}
+      <div style={{ flexShrink: 0, padding: "10px 16px 6px" }}>
+        <div style={{ display: "flex", gap: 6, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 22, padding: 4 }}>
+          {[
+            { k: "bonnie", label: "Bonnie", route: "chat" },
+            { k: "translator", label: "Translator", route: "translator" },
+          ].map((t) => (
+            <button
+              key={t.k}
+              onClick={() => go(t.route)}
+              style={{
+                all: "unset", cursor: "pointer", flex: 1, textAlign: "center",
+                padding: "8px 0", borderRadius: 18,
+                fontSize: 12.5, fontWeight: 800,
+                background: subTab === t.k ? `linear-gradient(135deg, ${C.pink}, ${C.indigo})` : "transparent",
+                color: subTab === t.k ? "#fff" : C.slate,
+                boxShadow: subTab === t.k ? "0 3px 8px rgba(238,58,138,0.22)" : "none",
+                transition: "all 0.15s",
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Sub-content */}
+      {subTab === "bonnie" ? (
+        <ChatScreen key={chatResetKey} go={go} openTranslator={openTranslator} />
+      ) : (
+        <TranslatorScreen go={go} initialMode={translatorMode} />
+      )}
+    </div>
+  );
+};
 
 // =================== APP SHELL ===================
 export default function App() {
+  const [userMode, setUserModeRaw] = useState("returning"); // "new" | "returning"
   const [screen, setScreen] = useState("home");
   const [translatorMode, setTranslatorMode] = useState("text");
   const go = (s) => setScreen(s);
   const openTranslator = (mode = "text") => {
     setTranslatorMode(mode);
     setScreen("translator");
+  };
+
+  // Switching user mode resets the starting screen
+  const setUserMode = (m) => {
+    setUserModeRaw(m);
+    setScreen(m === "new" ? "welcome" : "home");
   };
 
   // Phone is designed at fixed 380x780. Scale it down to fit the viewport
@@ -1595,18 +5207,27 @@ export default function App() {
   const activeTab =
     screen === "translator" ? "chat" :
     screen === "itinerary" ? "map" :
+    screen === "rewards" ? "home" :
+    screen === "onboarding" || screen === "help" ? "profile" :
     screen;
 
-  const showBottomNav = true;
+  // Hide bottom nav on the pre-account screens (Welcome, Signup, Onboarding for new users)
+  const showBottomNav =
+    !(userMode === "new" && (screen === "welcome" || screen === "signup" || screen === "onboarding"));
 
   const screens = {
-    home: <HomeScreen go={go} />,
-    chat: <ChatScreen go={go} openTranslator={openTranslator} />,
-    translator: <TranslatorScreen go={go} initialMode={translatorMode} />,
-    review: <ReviewScreen go={go} />,
+    welcome: <WelcomeScreen go={go} />,
+    signup: <SignupScreen go={go} />,
+    home: <HomeScreen go={go} openTranslator={openTranslator} userMode={userMode} />,
+    chat: <ChatTabWrapper subTab="bonnie" go={go} openTranslator={openTranslator} translatorMode={translatorMode} />,
+    translator: <ChatTabWrapper subTab="translator" go={go} openTranslator={openTranslator} translatorMode={translatorMode} />,
+    review: <ReviewScreen go={go} userMode={userMode} />,
     map: <MapScreen go={go} />,
     itinerary: <ItineraryScreen go={go} />,
-    profile: <ProfileScreen go={go} />,
+    profile: <ProfileScreen go={go} userMode={userMode} />,
+    rewards: <RewardsScreen go={go} userMode={userMode} />,
+    onboarding: <OnboardingScreen go={go} userMode={userMode} setUserMode={setUserMode} />,
+    help: <HelpScreen go={go} />,
   };
 
   return (
@@ -1632,6 +5253,16 @@ export default function App() {
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.05); opacity: 0.85; }
         }
+        @keyframes breathGlow {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.7), 0 0 6px 1px rgba(255, 179, 0, 0.4);
+            transform: scale(1);
+          }
+          50% {
+            box-shadow: 0 0 0 5px rgba(255, 179, 0, 0), 0 0 10px 2px rgba(255, 179, 0, 0.6);
+            transform: scale(1.15);
+          }
+        }
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
       `}</style>
 
@@ -1643,6 +5274,63 @@ export default function App() {
         <div style={{ fontSize: 22, fontWeight: 900, color: C.indigo, letterSpacing: -0.8, marginTop: 0 }}>
           bonvoy
           <span style={{ color: C.pink }}>!!!</span>
+        </div>
+      </div>
+
+      {/* MODE TOGGLE — switch between new-user journey and returning-user demo */}
+      <div style={{ marginBottom: 6, display: "flex", justifyContent: "center" }}>
+        <div style={{
+          display: "inline-flex", gap: 4,
+          background: "#fff",
+          border: `1px solid ${C.border}`,
+          borderRadius: 999, padding: 4,
+          boxShadow: "0 2px 8px rgba(59,46,229,0.06)",
+        }}>
+          {[
+            { k: "new", label: "New user", desc: "First-time experience" },
+            { k: "returning", label: "Returning user", desc: "After several weeks of use" },
+          ].map((m) => {
+            const active = userMode === m.k;
+            return (
+              <button
+                key={m.k}
+                onClick={() => setUserMode(m.k)}
+                style={{
+                  all: "unset", cursor: "pointer",
+                  display: "block", textAlign: "center",
+                  padding: "8px 16px", borderRadius: 999,
+                  minWidth: 150,
+                  background: active ? `linear-gradient(135deg, ${C.pink}, ${C.indigo})` : "transparent",
+                  color: active ? "#fff" : C.slate,
+                  transition: "all 0.15s",
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: -0.1 }}>{m.label}</div>
+                <div style={{ fontSize: 10, opacity: active ? 0.92 : 0.85, marginTop: 1 }}>{m.desc}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Tester helper line — adapts to current mode */}
+      <div style={{ marginBottom: 14, display: "flex", justifyContent: "center" }}>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          fontSize: 11, color: C.slate,
+          padding: "4px 12px",
+        }}>
+          {userMode === "new" ? (
+            <>
+              <span>💡</span>
+              <span>After signing up, switch to <b style={{ color: C.indigo }}>Returning User</b> to see the full app →</span>
+            </>
+          ) : (
+            <>
+              <span>✨</span>
+              <span>Showing the full app · Switch to <b style={{ color: C.pink }}>New User</b> to retake onboarding</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -1722,30 +5410,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Navigation crumbs */}
-      <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 4, justifyContent: "center", maxWidth: 400 }}>
-        {["home", "chat", "translator", "review", "map", "itinerary", "profile"].map((s) => (
-          <button
-            key={s}
-            onClick={() => go(s)}
-            style={{
-              all: "unset",
-              cursor: "pointer",
-              fontSize: 10,
-              fontWeight: 700,
-              padding: "4px 8px",
-              borderRadius: 16,
-              background: screen === s ? C.indigo : "#fff",
-              color: screen === s ? "#fff" : C.ink,
-              border: screen === s ? "none" : `1px solid ${C.border}`,
-              fontFamily: "'JetBrains Mono', monospace",
-              letterSpacing: 0.5,
-            }}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
