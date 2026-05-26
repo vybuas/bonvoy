@@ -40,6 +40,7 @@ import {
   HelpCircle,
   Settings,
   Gift,
+  Coins,
 } from "lucide-react";
 
 // BonVoy brand palette (pulled directly from the pitch deck)
@@ -598,6 +599,22 @@ const ChatScreen = ({ go, openTranslator }) => {
 
     if (/translat/i.test(t)) { go("translator"); return; }
 
+    // Currency conversion — show an example conversion in chat
+    if (/currency|convert.*money|convert.*euro|convert.*dollar|exchange rate/i.test(t)) {
+      reply = "Happy to help! 💱 Quick example: €100 ≈ $108 USD · £85 GBP · ¥17,200 JPY · 2,520,000 VND (rates updated daily). Just tell me the amount and which currencies — e.g. \"50 euros to pounds\" — and I'll convert it for you. Tip: tap any voucher in Rewards to see its value in your local currency too.";
+      setMessages([...next, { from: "bonnie", text: reply }]);
+      setInput("");
+      return;
+    }
+
+    // Travel style / packing advice — keep this BEFORE the /trip/ regex so it doesn't forward to itinerary
+    if (/pack|wear|outfit|clothing|clothes|what to bring|travel style|style advice/i.test(t)) {
+      reply = "Of course! I'd love to help with that — tell me a bit more about your vibe? 💫";
+      setMessages([...next, { from: "bonnie", text: reply }]);
+      setInput("");
+      return;
+    }
+
     // Itinerary version variations (cheaper, more local, family-friendly, etc.)
     if (/cheaper|budget|cheap|affordable|less expensive/i.test(t)) {
       reply = "On it! Here's a budget version of your plan 💸 Swapped: dinner at the fado restaurant → Time Out Market (€12 vs €38), tram 28 ride → walking tour (free), pastéis at Belém → local bakery in Alfama (€1.50 vs €3.50). Total saving: ~€55 per day. Want me to apply this to the itinerary?";
@@ -636,10 +653,10 @@ const ChatScreen = ({ go, openTranslator }) => {
   const quickQs = [
     { Icon: MapPin, label: "What's nearby?", action: sendLocationQuery },
     { Icon: Utensils, label: "Food recommendations" },
-    { Icon: Compass, label: "Cheaper version of my plan", action: () => send("Can you give me a cheaper version of my plan?") },
-    { Icon: Heart, label: "More local version", action: () => send("Can you make my plan more local?") },
+    { Icon: Languages, label: "Help me translate", action: () => openTranslator && openTranslator("text") },
+    { Icon: Coins, label: "Currency converter", action: () => send("Help me convert currency") },
     { Icon: Camera, label: "Hidden gems" },
-    { Icon: Shirt, label: "Style advice" },
+    { Icon: Shirt, label: "Travel style advice", action: () => send("Can you help me with what to pack and wear for my trip?") },
   ];
 
   // ChatScreen renders inside ChatTabWrapper's flex column
