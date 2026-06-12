@@ -5246,7 +5246,7 @@ const WelcomeScreen = ({ go }) => (
           ✦ MEET BONNIE ✦
         </div>
         <div style={{ fontSize: 38, fontWeight: 900, color: C.indigo, letterSpacing: -1.2, lineHeight: 1, marginTop: -2 }}>
-          bonvoy<span style={{ color: C.pink }}>!</span>
+          BonVoy<span style={{ color: C.pink }}>!</span>
         </div>
         <div style={{ fontSize: 14, color: C.ink, fontWeight: 700, marginTop: 4, lineHeight: 1.35 }}>
           Travel like a local, anywhere
@@ -5643,7 +5643,7 @@ export default function App() {
           ✦ CLICKABLE MOCKUP ✦
         </div>
         <div style={{ fontSize: 22, fontWeight: 900, color: C.indigo, letterSpacing: -0.8, marginTop: 0 }}>
-          bonvoy
+          BonVoy
           <span style={{ color: C.pink }}>!!!</span>
         </div>
       </div>
