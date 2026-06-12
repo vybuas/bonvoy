@@ -1772,7 +1772,7 @@ const ReviewScreen = ({ go, userMode = "returning" }) => {
 
   // ============ STEP 3: WRITE review ============
   if (step === "write") {
-    const MIN_WORDS = 50;
+    const MIN_WORDS = 20;
     const wordCount = reviewText.trim() === "" ? 0 : reviewText.trim().split(/\s+/).length;
     const meetsWordCount = wordCount >= MIN_WORDS;
     const canSubmit = stars > 0 && meetsWordCount;
@@ -3799,7 +3799,7 @@ const RewardsScreen = ({ go, userMode = "returning" }) => {
 
         <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 16, padding: 14 }}>
           {[
-            { Icon: Pencil, label: "Standard text review", credits: 15, desc: "Min. 50 words · location-verified" },
+            { Icon: Pencil, label: "Standard text review", credits: 15, desc: "Min. 20 words · location-verified" },
             { Icon: Camera, label: "Photo review", credits: 30, desc: "Built-in camera only · no gallery uploads" },
             { Icon: ImageIcon, label: "Full guide post", credits: 80, desc: "5+ photos · highest-value contribution" },
             { Icon: MapPin, label: "First review of an unlisted venue", credits: 40, desc: "New content bonus" },
@@ -4019,6 +4019,7 @@ const ProfileScreen = ({ go, userMode = "returning" }) => {
         { label: isNew ? "Wishlist · Start saving places" : "Wishlist · 7 saved places", Icon: Bookmark, c: C.pink },
         { label: "Travel preferences · Personalize feed", Icon: Settings, c: C.indigo, go: "onboarding" },
         { label: "Help & FAQ · How BonVoy works", Icon: HelpCircle, c: C.indigo, go: "help" },
+        { label: isNew ? "Account settings · Name, email, password" : "Account settings · Vy Ngo", Icon: User, c: C.indigo, go: "settings" },
         { label: isNew ? "Subscription · Free plan" : "Subscription · Premium", Icon: Sparkles, c: C.indigo },
         { label: "Language · English / Español", Icon: Languages, c: C.indigo },
       ].map((r, i) => (
@@ -4939,6 +4940,160 @@ const OnboardingScreen = ({ go, userMode = "new", setUserMode }) => {
   );
 };
 
+// ---------- ACCOUNT SETTINGS ----------
+const SettingsScreen = ({ go, userMode = "returning" }) => {
+  const isNew = userMode === "new";
+
+  // Seed values — Vy's data for returning users, empty for new users
+  const [name, setName] = useState(isNew ? "" : "Vy Ngo");
+  const [email, setEmail] = useState(isNew ? "" : "vy.ngo@bonvoy.app");
+  const [phone, setPhone] = useState(isNew ? "" : "+31 6 12 34 56 78");
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  const handleSave = () => {
+    setSavedFlash(true);
+    setTimeout(() => setSavedFlash(false), 1800);
+  };
+
+  return (
+    <Screen bg={C.cream}>
+      <StatusBar />
+
+      {/* Header */}
+      <div style={{ padding: "10px 20px 0", display: "flex", alignItems: "center", gap: 8 }}>
+        <button
+          onClick={() => go("profile")}
+          style={{ all: "unset", cursor: "pointer", color: C.indigo, display: "flex", alignItems: "center", gap: 4, fontWeight: 800, fontSize: 13 }}
+        >
+          <ChevronLeft size={16} /> Profile
+        </button>
+      </div>
+
+      <div style={{ padding: "10px 20px 0" }}>
+        <h1 style={{ fontSize: 22, margin: "4px 0 4px", fontWeight: 900, color: C.ink, letterSpacing: -0.5 }}>
+          Account settings
+        </h1>
+        <p style={{ margin: 0, fontSize: 12, color: C.slate, lineHeight: 1.4 }}>
+          Update the personal info linked to your account
+        </p>
+      </div>
+
+      {/* Form */}
+      <div style={{ padding: "16px 20px 0", display: "flex", flexDirection: "column", gap: 10 }}>
+        {/* Name */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
+            NAME
+          </div>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your full name"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              border: `1px solid ${C.border}`, borderRadius: 12, padding: "11px 13px",
+              fontSize: 13, fontFamily: "system-ui", outline: "none",
+              background: "#fff", color: C.ink, fontWeight: 600,
+            }}
+          />
+        </div>
+
+        {/* Email */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
+            EMAIL
+          </div>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            type="email"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              border: `1px solid ${C.border}`, borderRadius: 12, padding: "11px 13px",
+              fontSize: 13, fontFamily: "system-ui", outline: "none",
+              background: "#fff", color: C.ink, fontWeight: 600,
+            }}
+          />
+        </div>
+
+        {/* Phone */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
+            PHONE
+          </div>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+31 6 ..."
+            type="tel"
+            style={{
+              width: "100%", boxSizing: "border-box",
+              border: `1px solid ${C.border}`, borderRadius: 12, padding: "11px 13px",
+              fontSize: 13, fontFamily: "system-ui", outline: "none",
+              background: "#fff", color: C.ink, fontWeight: 600,
+            }}
+          />
+        </div>
+
+        {/* Password — shown as a tappable row, not an editable field */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.slate, letterSpacing: 0.5, fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
+            PASSWORD
+          </div>
+          <button
+            style={{
+              all: "unset", cursor: "pointer",
+              width: "100%", boxSizing: "border-box",
+              border: `1px solid ${C.border}`, borderRadius: 12, padding: "11px 13px",
+              fontSize: 13, fontFamily: "system-ui",
+              background: "#fff", color: C.indigo, fontWeight: 700,
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+            }}
+          >
+            <span>Change password</span>
+            <ChevronLeft size={14} color={C.slate} style={{ transform: "rotate(180deg)" }} />
+          </button>
+        </div>
+      </div>
+
+      {/* Save button */}
+      <div style={{ padding: "16px 20px 0" }}>
+        <button
+          onClick={handleSave}
+          style={{
+            all: "unset", cursor: "pointer",
+            display: "block", width: "100%", boxSizing: "border-box",
+            padding: "13px 0", textAlign: "center",
+            background: savedFlash ? "#1A7A3E" : `linear-gradient(135deg, ${C.pink}, ${C.indigo})`,
+            color: "#fff", fontSize: 13.5, fontWeight: 800,
+            borderRadius: 16,
+            boxShadow: "0 6px 18px rgba(238,58,138,0.22)",
+            transition: "background 0.2s",
+          }}
+        >
+          {savedFlash ? "✓ Saved" : "Save changes"}
+        </button>
+      </div>
+
+      {/* Sign out */}
+      <div style={{ padding: "20px 20px 0", textAlign: "center" }}>
+        <button
+          style={{
+            all: "unset", cursor: "pointer",
+            fontSize: 12, fontWeight: 700, color: "#D43A3A",
+            padding: "8px 14px",
+          }}
+        >
+          Sign out
+        </button>
+      </div>
+
+      <div style={{ height: 80 }} />
+    </Screen>
+  );
+};
+
 // ---------- HELP / FAQ ----------
 const HelpScreen = ({ go }) => {
   const [openIdx, setOpenIdx] = useState(0);
@@ -5100,8 +5255,8 @@ const WelcomeScreen = ({ go }) => (
           Hidden gems verified by real locals · AI chat in every language · Earn rewards for genuine reviews
         </div>
 
-        {/* Core features — 2x2 grid, compact */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 14, width: "100%", maxWidth: 280 }}>
+        {/* Core features — informational highlights, not buttons */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, rowGap: 12, marginTop: 18, width: "100%", maxWidth: 280 }}>
           {[
             { Icon: Calendar, label: "Trip Planning", bg: C.pinkBg, accent: C.pink },
             { Icon: Languages, label: "Translator", bg: "#EBE7FB", accent: C.indigo },
@@ -5111,22 +5266,18 @@ const WelcomeScreen = ({ go }) => (
             <div
               key={i}
               style={{
-                background: "#fff",
-                border: `1px solid ${C.border}`,
-                borderRadius: 12,
-                padding: "8px 10px",
                 display: "flex", alignItems: "center", gap: 8,
               }}
             >
               <div style={{
-                width: 26, height: 26, borderRadius: 8,
+                width: 28, height: 28, borderRadius: "50%",
                 background: f.bg,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0,
               }}>
-                <f.Icon size={13} color={f.accent} />
+                <f.Icon size={14} color={f.accent} />
               </div>
-              <div style={{ fontSize: 11.5, fontWeight: 800, color: C.ink, letterSpacing: -0.1 }}>{f.label}</div>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: C.ink, letterSpacing: -0.1 }}>{f.label}</div>
             </div>
           ))}
         </div>
@@ -5427,7 +5578,7 @@ export default function App() {
     screen === "translator" ? "chat" :
     screen === "itinerary" ? "map" :
     screen === "rewards" ? "home" :
-    screen === "onboarding" || screen === "help" ? "profile" :
+    screen === "onboarding" || screen === "help" || screen === "settings" ? "profile" :
     screen;
 
   // Hide bottom nav on the pre-account screens (Welcome, Signup, Onboarding for new users)
@@ -5447,6 +5598,7 @@ export default function App() {
     rewards: <RewardsScreen go={go} userMode={userMode} />,
     onboarding: <OnboardingScreen go={go} userMode={userMode} setUserMode={setUserMode} />,
     help: <HelpScreen go={go} />,
+    settings: <SettingsScreen go={go} userMode={userMode} />,
   };
 
   return (
